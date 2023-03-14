@@ -65,6 +65,7 @@ public class MainLayout extends AppLayout {
         Header header = new Header(appName);
 
         Scroller scroller = new Scroller(createNavigation());
+        
 
         addToDrawer(header, scroller, createFooter());
     }
@@ -73,11 +74,7 @@ public class MainLayout extends AppLayout {
         // AppNav is not yet an official component.
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
         AppNav nav = new AppNav();
-
-        if (accessChecker.hasAccess(LoginView.class)) {
-            nav.addItem(new AppNavItem("Login", LoginView.class, LineAwesomeIcon.FILE.create()));
-
-        }
+        
         if (accessChecker.hasAccess(MyNotesView.class)) {
             nav.addItem(new AppNavItem("MyNotes", MyNotesView.class, LineAwesomeIcon.BOOK_SOLID.create()));
 
@@ -107,9 +104,7 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+            avatar.setName(user.getName());
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 

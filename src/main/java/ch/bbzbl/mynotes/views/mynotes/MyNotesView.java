@@ -13,8 +13,8 @@ import ch.bbzbl.mynotes.views.MainLayout;
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("MyNotes")
+@RouteAlias(value = "", layout = MainLayout.class)
 @Route(value = "MyNotes", layout = MainLayout.class)
-@RouteAlias("")
 @PermitAll
 public class MyNotesView extends VerticalLayout {
 
