@@ -39,5 +39,10 @@ public class UserService {
     public int count() {
         return (int) repository.count();
     }
+    
+    public int countByUsername(String username) {
+    	return repository.countByUsername(username);
+    	
+    }
 
 }
