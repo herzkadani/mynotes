@@ -1,12 +1,16 @@
 package ch.bbzbl.mynotes.views.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.dialog.DialogVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -150,6 +154,13 @@ public class AccountView extends HorizontalLayout {
 
 		} catch (ValidationException e) {
 			NotificationFactory.errorNotification("Some fields are incorrect").open();
+		} catch (ObjectOptimisticLockingFailureException e) {
+			Dialog versionConflictDialog = new Dialog();
+			versionConflictDialog.add(new Html("<p>There has been a version conflict. Someone has just edited the same data and saved it before you. Click <a onClick=\"window.location.reload()\" style=\"color:#0044CC;\">here</a> to reload the page.</p>"));
+			versionConflictDialog.setModal(true);
+			versionConflictDialog.setCloseOnEsc(false);
+			versionConflictDialog.setCloseOnOutsideClick(false);
+			versionConflictDialog.open();
 		}
 	}
 
