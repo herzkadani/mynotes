@@ -33,13 +33,11 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver, HasU
     public LoginView(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
         setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
-
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("MyNotes");
         i18n.getHeader().setDescription("Login using user/user or admin/admin"); //TODO remove before deployment
         setI18n(i18n);
-        getElement().appendChild();
         setForgotPasswordButtonVisible(false);
         setOpened(true);
         
