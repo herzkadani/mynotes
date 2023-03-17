@@ -1,8 +1,11 @@
 package ch.bbzbl.mynotes.views.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-
+import ch.bbzbl.mynotes.bl.controller.AccountController;
+import ch.bbzbl.mynotes.data.entity.User;
+import ch.bbzbl.mynotes.security.AuthenticatedUser;
+import ch.bbzbl.mynotes.security.PasswordEncoder;
+import ch.bbzbl.mynotes.views.MainLayout;
+import ch.bbzbl.mynotes.views.components.NotificationFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
@@ -10,7 +13,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.DialogVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -22,20 +24,15 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import ch.bbzbl.mynotes.bl.controller.AccountController;
-import ch.bbzbl.mynotes.data.entity.User;
-import ch.bbzbl.mynotes.security.AuthenticatedUser;
-import ch.bbzbl.mynotes.security.PasswordEncoder;
-import ch.bbzbl.mynotes.views.MainLayout;
-import ch.bbzbl.mynotes.views.components.NotificationFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
  * Account View
- * @author Dani Herzka
  *
+ * @author Dani Herzka
  */
 @PageTitle("Account")
 @Route(value = "account/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
@@ -106,15 +103,15 @@ public class AccountView extends HorizontalLayout {
 			return !accountController.usernameAlreadyTaken(v);
 		}, "Username already taken").bind(User::getUsername, User::setUsername);
 
-		
+
 		userBinder.forField(txtName).bind(User::getName, User::setName);
-		
+
 		userBinder.forField(txtEmail).withValidator(new EmailValidator("Enter a valid E-Mail")).bind(User::getEmail,
 				User::setEmail);
-		
+
 		userBinder.bind(txtPassword, bindUser -> null,
 				(bindUser, value) -> bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value)));
-		
+
 		userBinder.forField(txtRepeatPassword)
 				.withValidator(value -> value.equals(txtPassword.getValue()), "Passwords don't match") //validate if first and second passwords match
 				.bind(bindUser -> null,
@@ -132,11 +129,11 @@ public class AccountView extends HorizontalLayout {
 		layForm.add(txtUsername, txtName, txtEmail, txtPassword, txtRepeatPassword, btnSave);
 		add(layForm);
 	}
-	
+
 	private void saveButtonClickEvent(ClickEvent<Button> event) {
 		try {
 			String oldUsername = user.getUsername();
-			
+
 			//write data in database
 			userBinder.writeBean(user);
 			accountController.updateUser(user);
