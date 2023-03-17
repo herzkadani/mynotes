@@ -25,6 +25,7 @@ public class User extends AbstractEntity {
     private String email;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Folder> folders = null;
+    private boolean isOAuthUser;
 
     public String getUsername() {
         return username;
@@ -77,6 +78,16 @@ public class User extends AbstractEntity {
         folders.add(f);
         f.setUser(this);
     }
+
+	public boolean isOAuthUser() {
+		return isOAuthUser;
+	}
+
+	public void setOAuthUser(boolean isOAuthUser) {
+		this.isOAuthUser = isOAuthUser;
+	}
+    
+    
 
 
 }

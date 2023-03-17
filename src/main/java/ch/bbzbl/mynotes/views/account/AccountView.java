@@ -10,7 +10,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.DialogVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -24,21 +23,22 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import ch.bbzbl.mynotes.bl.controller.AccountController;
+import ch.bbzbl.mynotes.components.NotificationFactory;
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
 import ch.bbzbl.mynotes.security.PasswordEncoder;
 import ch.bbzbl.mynotes.views.MainLayout;
-import ch.bbzbl.mynotes.views.components.NotificationFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
 
 /**
  * Account View
+ * 
  * @author Dani Herzka
  *
  */
 @PageTitle("Account")
-@Route(value = "account/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "account", layout = MainLayout.class)
 @PermitAll
 @Uses(Icon.class)
 public class AccountView extends HorizontalLayout {
@@ -96,6 +96,13 @@ public class AccountView extends HorizontalLayout {
 		txtUsername.setRequired(true);
 		txtName.setRequired(true);
 		txtEmail.setRequired(true);
+		
+		if(user.isOAuthUser()) {
+			txtUsername.setReadOnly(true);
+			txtEmail.setReadOnly(true);
+			txtPassword.setVisible(false);
+			txtRepeatPassword.setVisible(false);
+		}
 
 		// bind fields
 		userBinder.forField(txtUsername).withValidator(v -> {
@@ -104,21 +111,36 @@ public class AccountView extends HorizontalLayout {
 				return true;
 			// if username already taken, return false
 			return !accountController.usernameAlreadyTaken(v);
-		}, "Username already taken").bind(User::getUsername, User::setUsername);
+		}, "Username already taken").bind(User::getUsername, (bindUser, string) -> {
+			// OAuth users can't change username
+			if (!bindUser.isOAuthUser())
+				bindUser.setUsername(string);
+		});
 
-		
 		userBinder.forField(txtName).bind(User::getName, User::setName);
-		
+
 		userBinder.forField(txtEmail).withValidator(new EmailValidator("Enter a valid E-Mail")).bind(User::getEmail,
-				User::setEmail);
-		
-		userBinder.bind(txtPassword, bindUser -> null,
-				(bindUser, value) -> bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value)));
-		
+				(bindUser, string) -> {
+					// OAuth users can't change email
+					if (!bindUser.isOAuthUser())
+						bindUser.setEmail(string);
+				});
+
+		userBinder.bind(txtPassword, bindUser -> null, (bindUser, value) -> {
+			// OAuth Users can't set a password
+			if (!bindUser.isOAuthUser())
+				bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
+		});
+
 		userBinder.forField(txtRepeatPassword)
-				.withValidator(value -> value.equals(txtPassword.getValue()), "Passwords don't match") //validate if first and second passwords match
-				.bind(bindUser -> null,
-						(bindUser, value) -> bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value)));
+				// validate if first and second passwords match
+				.withValidator(value -> value.equals(txtPassword.getValue()), "Passwords don't match")
+				.bind(bindUser -> null, (bindUser, value) -> {
+					// OAuth Users can't set a password
+					if (!bindUser.isOAuthUser())
+						bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
+
+				});
 
 		// load existing data from user object
 		userBinder.readBean(user);
@@ -132,16 +154,16 @@ public class AccountView extends HorizontalLayout {
 		layForm.add(txtUsername, txtName, txtEmail, txtPassword, txtRepeatPassword, btnSave);
 		add(layForm);
 	}
-	
+
 	private void saveButtonClickEvent(ClickEvent<Button> event) {
 		try {
 			String oldUsername = user.getUsername();
-			
-			//write data in database
+
+			// write data in database
 			userBinder.writeBean(user);
 			accountController.updateUser(user);
 
-			//get data from database to retrieve the new version
+			// get data from database to retrieve the new version
 			user = accountController.getUserById(user.getId());
 			userBinder.readBean(user);
 
@@ -156,7 +178,8 @@ public class AccountView extends HorizontalLayout {
 			NotificationFactory.errorNotification("Some fields are incorrect").open();
 		} catch (ObjectOptimisticLockingFailureException e) {
 			Dialog versionConflictDialog = new Dialog();
-			versionConflictDialog.add(new Html("<p>There has been a version conflict. Someone has just edited the same data and saved it before you. Click <a onClick=\"window.location.reload()\" style=\"color:#0044CC;\">here</a> to reload the page.</p>"));
+			versionConflictDialog.add(new Html(
+					"<p>There has been a version conflict. Someone has just edited the same data and saved it before you. Click <a onClick=\"window.location.reload()\" style=\"color:#0044CC;\">here</a> to reload the page.</p>"));
 			versionConflictDialog.setModal(true);
 			versionConflictDialog.setCloseOnEsc(false);
 			versionConflictDialog.setCloseOnOutsideClick(false);

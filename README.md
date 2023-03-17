@@ -12,6 +12,9 @@ http://localhost:8080 in your browser.
 You can also import the project to your IDE of choice as you would with any
 Maven project. Read more on [how to import Vaadin projects to different IDEs](https://vaadin.com/docs/latest/guide/step-by-step/importing) (Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
 
+### OAuth2 setup
+Create a Google OAuth 2.0 Client ID following [this tutorial](https://vaadin.com/blog/oauth-2-and-google-sign-in-for-a-vaadin-application) and insert the Client ID and Client Secret in the application.properties file
+
 ## Deploying to Production
 
 To create a production build, call `mvnw clean package -Pproduction` (Windows),
