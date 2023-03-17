@@ -1,41 +1,54 @@
 package ch.bbzbl.mynotes.data.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Note extends AbstractEntity {
 
-    private String titel;
-    @Lob
-    @Column(columnDefinition = "CLOB")
-    private String content;
-    @ManyToOne
-    @JoinColumn(name = "folder", foreignKey = @jakarta.persistence.ForeignKey(name = "folder_fk"))
-    private Folder folder;
+	private String titel;
 
+	@Lob
+	private String content;
 
-    public String getTitel() {
-        return titel;
-    }
+	@ManyToOne
+	@JoinColumn(name = "folder", foreignKey = @jakarta.persistence.ForeignKey(name = "folder_fk"))
+	private Folder folder;
 
-    public void setTitel(String titel) {
-        this.titel = titel;
-    }
+	public Note(String titel, String content, Folder folder) {
+		this.titel = titel;
+		this.content = content;
+		this.folder = folder;
+	}
 
-    public String getContent() {
-        return content;
-    }
+	public Note() {
+	}
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+	public String getTitel() {
+		return titel;
+	}
 
-    public Folder getFolder() {
-        return folder;
-    }
+	public void setTitel(String titel) {
+		this.titel = titel;
+	}
 
-    public void setFolder(Folder folder) {
-        this.folder = folder;
-    }
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public Folder getFolder() {
+		return folder;
+	}
+
+	public void setFolder(Folder folder) {
+		this.folder = folder;
+	}
 
 }
