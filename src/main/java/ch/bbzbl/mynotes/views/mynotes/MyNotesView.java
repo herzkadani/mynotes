@@ -9,11 +9,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -38,218 +34,222 @@ import java.util.Objects;
 @PermitAll
 public class MyNotesView extends Div {
 
-	public static final String LEER = "Leer";
-	public static final String MIN_WIDTH = "300px";
-	public static final String BEARBEITEN = "Bearbeiten";
-	private final FolderService folderService;
-	private final NoteService noteService;
-	private final VerticalLayout noteLayout = new VerticalLayout();
-	VirtualList<Folder> folderList = new VirtualList<>();
-	VirtualList<Note> noteList = new VirtualList<>();
-	RichTextEditor textEditor = new RichTextEditor();
-	SplitLayout splitLayout;
-	HorizontalLayout notesSplit = new HorizontalLayout();
-	private List<Folder> folders;
-	private List<Note> notes;
-	private Folder currentFolder;
-	private Note currentNote;
-	private long openFolderID;
-	private long openNoteID;
-	private final ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<>(
-			folder -> {
+    public static final String LEER = "Leer";
+    public static final String MIN_WIDTH = "300px";
+    public static final String BEARBEITEN = "Bearbeiten";
+    private final FolderService folderService;
+    private final NoteService noteService;
+    private final VerticalLayout noteLayout = new VerticalLayout();
+    VirtualList<Folder> folderList = new VirtualList<>();
+    VirtualList<Note> noteList = new VirtualList<>();
+    RichTextEditor textEditor = new RichTextEditor();
+    SplitLayout splitLayout;
+    HorizontalLayout notesSplit = new HorizontalLayout();
+    private List<Folder> folders;
+    private List<Note> notes;
+    private Folder currentFolder;
+    private Note currentNote;
+    private long openFolderID;
+    private long openNoteID;
+    private final ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<>(
+            folder -> {
 
-				HorizontalLayout cardLayout = new HorizontalLayout();
-				cardLayout.setMargin(true);
+                HorizontalLayout cardLayout = new HorizontalLayout();
+                cardLayout.setMargin(true);
 
-				H2 titel = new H2(folder.getTitel());
+                H2 titel = new H2(folder.getTitel());
 
-				titel.addClickListener(e -> {
-					openFolderID = folder.getId();
-					notes = folder.getNotes();
-					if (notes.isEmpty()) {
-						currentNote = new Note(LEER, LEER, currentFolder);
-						notes.add(currentNote);
-					} else {
-						currentNote = notes.stream().findFirst().orElse(null);
-					}
-					noteList.setItems(notes);
-					currentFolder = folder;
+                titel.addClickListener(e -> {
+                    openFolderID = folder.getId();
+                    notes = folder.getNotes();
+                    if (notes.isEmpty()) {
+                        currentNote = new Note(LEER, LEER, currentFolder);
+                        notes.add(currentNote);
+                    } else {
+                        currentNote = notes.stream().findFirst().orElse(null);
+                    }
+                    noteList.setItems(notes);
+                    currentFolder = folder;
 
-					folderList.setItems(folders);
-				});
-				if (!Objects.equals(folder.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
-					cardLayout.removeAll();
-					cardLayout.add(titel);
-				} else if (Objects.equals(folder.getId(), openFolderID)) {
-					Span open = new Span(createIcon(VaadinIcon.FOLDER_OPEN), new Span("open"));
+                    folderList.setItems(folders);
+                });
+                if (!Objects.equals(folder.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
+                    cardLayout.removeAll();
+                    cardLayout.add(titel);
+                } else if (Objects.equals(folder.getId(), openFolderID)) {
+                    Span open = new Span(createIcon(VaadinIcon.FOLDER_OPEN), new Span("open"));
 
-					open.getElement().getThemeList().add("badge");
+                    open.getElement().getThemeList().add("badge");
 
-					cardLayout.add(titel);
-					cardLayout.add(open);
-				} else {
-					cardLayout.add(titel);
-				}
-				return cardLayout;
-			});
-	private final ComponentRenderer<Component, Note> noteCardRenderer = new ComponentRenderer<>(
-			note -> {
+                    cardLayout.add(titel);
+                    cardLayout.add(open);
+                } else {
+                    cardLayout.add(titel);
+                }
+                return cardLayout;
+            });
+    private final ComponentRenderer<Component, Note> noteCardRenderer = new ComponentRenderer<>(
+            note -> {
 
-				HorizontalLayout cardLayout = new HorizontalLayout();
+                HorizontalLayout cardLayout = new HorizontalLayout();
 
-				cardLayout.setMargin(true);
+                cardLayout.setMargin(true);
 
-				H3 titel = new H3(note.getTitel());
+                H3 titel = new H3(note.getTitel());
 
-				titel.addClickListener(e -> {
-					openNoteID = note.getId();
-					notesSplit.remove(noteLayout);
-					notesSplit.add(getNormalLayout());
-					currentNote = note;
+                titel.addClickListener(e -> {
+                    openNoteID = note.getId();
+                    notesSplit.remove(noteLayout);
+                    notesSplit.add(getNormalLayout());
+                    currentNote = note;
 
-					noteList.setItems(notes);
-				});
+                    noteList.setItems(notes);
+                });
 
 
-				if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
-					cardLayout.removeAll();
-					cardLayout.add(titel);
-				} else if (Objects.equals(note.getId(), openNoteID)) {
-					Span open = new Span(createIcon(VaadinIcon.PENCIL), new Span("open"));
+                if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
+                    cardLayout.removeAll();
+                    cardLayout.add(titel);
+                } else if (Objects.equals(note.getId(), openNoteID)) {
+                    Span open = new Span(createIcon(VaadinIcon.PENCIL), new Span("open"));
 
-					open.getElement().getThemeList().add("badge");
+                    open.getElement().getThemeList().add("badge");
 
-					cardLayout.add(titel);
-					cardLayout.add(open);
-				} else {
-					cardLayout.add(titel);
-				}
-				return cardLayout;
-			});
+                    cardLayout.add(titel);
+                    cardLayout.add(open);
+                } else {
+                    cardLayout.add(titel);
+                }
+                return cardLayout;
+            });
 
-	public MyNotesView(FolderService folderService, NoteService noteService) {
-		this.folderService = folderService;
-		this.noteService = noteService;
-		setSizeFull();
-		getStyle().set("text-align", "center");
+    public MyNotesView(FolderService folderService, NoteService noteService) {
+        this.folderService = folderService;
+        this.noteService = noteService;
+        setSizeFull();
+        getStyle().set("text-align", "center");
 
-		add(createContent());
+        add(createContent());
 
-	}
+    }
 
-	private SplitLayout createContent() {
+    private SplitLayout createContent() {
 
-		if (this.folderService.list() == null) {
-			currentFolder = new Folder(LEER, false, null, null);
+        if (this.folderService.list().isEmpty()) {
+            currentFolder = new Folder(LEER, false, null, null);
 			folderService.update(currentFolder);
-			folders = folderService.list();
-			notes = folders.stream().findFirst().get().getNotes();
-		} else if (folders.stream().findFirst().get().getNotes() == null) {
 			currentNote = new Note(LEER, LEER, currentFolder);
 			noteService.update(currentNote);
-			folders = folderService.list();
-			notes = folders.stream().findFirst().get().getNotes();
-		} else {
+            folders = folderService.list();
+            notes = folders.stream().findFirst().get().getNotes();
+        } else if (this.folderService.list().stream().findFirst().get().getNotes().isEmpty()) {
+			currentNote = new Note(LEER, LEER, currentFolder);
+			noteService.update(currentNote);
+            folders = folderService.list();
+            notes = folders.stream().findFirst().get().getNotes();
+            currentFolder = folders.stream().findFirst().orElse(null);
+            currentNote = notes.stream().findFirst().orElse(null);
+        } else {
 			folders = folderService.list();
 			notes = folders.stream().findFirst().get().getNotes();
 			currentFolder = folders.stream().findFirst().orElse(null);
 			currentNote = notes.stream().findFirst().orElse(null);
 		}
 
-		folderList.setItems(folders);
-		folderList.setRenderer(folderCardRenderer);
-		folderList.setHeightFull();
-		folderList.setMinWidth(MIN_WIDTH);
+        folderList.setItems(folders);
+        folderList.setRenderer(folderCardRenderer);
+        folderList.setHeightFull();
+        folderList.setMinWidth(MIN_WIDTH);
 
-		noteList.setItems(notes);
-		noteList.setRenderer(noteCardRenderer);
-		noteList.setHeightFull();
-		noteList.setMinWidth(MIN_WIDTH);
+        noteList.setItems(notes);
+        noteList.setRenderer(noteCardRenderer);
+        noteList.setHeightFull();
+        noteList.setMinWidth(MIN_WIDTH);
 
-		notesSplit.setPadding(true);
-		notesSplit.add(noteList);
-		notesSplit.add(getNormalLayout());
+        notesSplit.setPadding(true);
+        notesSplit.add(noteList);
+        notesSplit.add(getNormalLayout());
 
-		splitLayout = new SplitLayout(folderList, notesSplit);
-		splitLayout.setSplitterPosition(20);
-		splitLayout.setHeightFull();
-		splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_MINIMAL);
+        splitLayout = new SplitLayout(folderList, notesSplit);
+        splitLayout.setSplitterPosition(20);
+        splitLayout.setHeightFull();
+        splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_MINIMAL);
 
-		return splitLayout;
-	}
+        return splitLayout;
+    }
 
-	private VerticalLayout getNormalLayout() {
+    private VerticalLayout getNormalLayout() {
 
-		noteLayout.removeAll();
+        noteLayout.removeAll();
 
-		H2 noteTitle = new H2(currentNote.getTitel());
+        H2 noteTitle = new H2(currentNote.getTitel());
 
-		String valueAsHtml = currentNote.getContent();
+        String valueAsHtml = currentNote.getContent();
 
-		Label label = new Label(valueAsHtml);
+        Label label = new Label(valueAsHtml);
 
-		Button noteButton = new Button(BEARBEITEN, this::editMode);
+        Button noteButton = new Button(BEARBEITEN, this::editMode);
 
-		noteLayout.add(noteTitle, label, noteButton);
+        noteLayout.add(noteTitle, label, noteButton);
 
-		return noteLayout;
+        return noteLayout;
 
-	}
+    }
 
-	private VerticalLayout getEditLayout() {
+    private VerticalLayout getEditLayout() {
 
-		noteLayout.removeAll();
+        noteLayout.removeAll();
 
-		TextField noteTitle = new TextField("Titel");
-		noteTitle.setValue(currentNote.getTitel());
-		noteTitle.setClearButtonVisible(true);
+        TextField noteTitle = new TextField("Titel");
+        noteTitle.setValue(currentNote.getTitel());
+        noteTitle.setClearButtonVisible(true);
 
-		String valueAsHtml = currentNote.getContent();
+        String valueAsHtml = currentNote.getContent();
 
-		textEditor.asHtml().setValue(valueAsHtml);
+        textEditor.asHtml().setValue(valueAsHtml);
 
-		Button save = new Button("speichern", e -> {
+        Button save = new Button("speichern", e -> {
 
-			currentNote.setContent(textEditor.getValue());
-			currentNote.setTitel(noteTitle.getValue());
-			noteService.update(currentNote);
+            currentNote.setContent(textEditor.getValue());
+            currentNote.setTitel(noteTitle.getValue());
+            noteService.update(currentNote);
 
-			notesSplit.remove(noteLayout);
-			notesSplit.add(getNormalLayout());
-		});
-		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            notesSplit.remove(noteLayout);
+            notesSplit.add(getNormalLayout());
+        });
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-		Button cancel = new Button("abbrechen", buttonClickEvent -> {
-			notesSplit.remove(noteLayout);
-			notesSplit.add(getNormalLayout());
-		});
-		cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        Button cancel = new Button("abbrechen", buttonClickEvent -> {
+            notesSplit.remove(noteLayout);
+            notesSplit.add(getNormalLayout());
+        });
+        cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-		HorizontalLayout buttonsLayout = new HorizontalLayout(save, cancel);
+        HorizontalLayout buttonsLayout = new HorizontalLayout(save, cancel);
 
-		noteLayout.add(noteTitle, textEditor, buttonsLayout);
+        noteLayout.add(noteTitle, textEditor, buttonsLayout);
 
-		return noteLayout;
-	}
+        return noteLayout;
+    }
 
-	private void editMode(ClickEvent<Button> eB) {
+    private void editMode(ClickEvent<Button> eB) {
 
-		if (eB.getSource().getText().equals(BEARBEITEN)) {
+        if (eB.getSource().getText().equals(BEARBEITEN)) {
 
-			notesSplit.remove(noteLayout);
-			notesSplit.add(getEditLayout());
+            notesSplit.remove(noteLayout);
+            notesSplit.add(getEditLayout());
 
-		} else {
+        } else {
 
-			notesSplit.remove(noteLayout);
-			notesSplit.add(getNormalLayout());
+            notesSplit.remove(noteLayout);
+            notesSplit.add(getNormalLayout());
 
-		}
-	}
+        }
+    }
 
-	private Icon createIcon(VaadinIcon vaadinIcon) {
-		Icon icon = vaadinIcon.create();
-		icon.getStyle().set("padding", "var(--lumo-space-xs");
-		return icon;
-	}
+    private Icon createIcon(VaadinIcon vaadinIcon) {
+        Icon icon = vaadinIcon.create();
+        icon.getStyle().set("padding", "var(--lumo-space-xs");
+        return icon;
+    }
 }
