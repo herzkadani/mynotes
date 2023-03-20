@@ -1,7 +1,6 @@
 package ch.bbzbl.mynotes.data.entity;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -25,6 +24,13 @@ public class Folder extends AbstractEntity {
 	private User user;
 
 	public Folder() {
+	}
+
+	public Folder(String titel, boolean isPublic, List<Note> notes, User user) {
+		this.titel = titel;
+		this.isPublic = isPublic;
+		this.notes = notes;
+		this.user = user;
 	}
 
 	public String getTitel() {

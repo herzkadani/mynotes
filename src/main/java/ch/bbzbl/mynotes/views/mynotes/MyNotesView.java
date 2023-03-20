@@ -8,13 +8,20 @@ import ch.bbzbl.mynotes.views.MainLayout;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.richtexteditor.RichTextEditor;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayoutVariant;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -23,6 +30,7 @@ import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
+import java.util.Objects;
 
 @PageTitle("MyNotes")
 @RouteAlias(value = "", layout = MainLayout.class)
@@ -30,44 +38,24 @@ import java.util.List;
 @PermitAll
 public class MyNotesView extends Div {
 
-	private final String BEARBEITEN = "Bearbeiten";
-	private final String NORMAL = "Normal";
+	public static final String LEER = "Leer";
+	public static final String MIN_WIDTH = "300px";
+	public static final String BEARBEITEN = "Bearbeiten";
+	private final FolderService folderService;
+	private final NoteService noteService;
+	private final VerticalLayout noteLayout = new VerticalLayout();
 	VirtualList<Folder> folderList = new VirtualList<>();
 	VirtualList<Note> noteList = new VirtualList<>();
 	RichTextEditor textEditor = new RichTextEditor();
 	SplitLayout splitLayout;
-	Button noteButton;
-	private VerticalLayout noteLayout = new VerticalLayout();
-	//folderService
+	HorizontalLayout notesSplit = new HorizontalLayout();
 	private List<Folder> folders;
 	private List<Note> notes;
-	private FolderService folderService;
-	private NoteService noteService;
 	private Folder currentFolder;
 	private Note currentNote;
-	private ComponentRenderer<Component, Note> noteCardRenderer = new ComponentRenderer<Component, Note>(
-			note -> {
-
-				HorizontalLayout cardLayout = new HorizontalLayout();
-
-				cardLayout.setMargin(true);
-
-				H2 titel = new H2(note.getTitel());
-
-				titel.addClickListener(e -> {
-
-					splitLayout.remove(noteLayout);
-					splitLayout.addToSecondary(getNormalLayout());
-					currentNote = note;
-				});
-
-				cardLayout.add(titel);
-
-				return cardLayout;
-
-			});
-
-	private ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<Component, Folder>(
+	private long openFolderID;
+	private long openNoteID;
+	private final ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<>(
 			folder -> {
 
 				HorizontalLayout cardLayout = new HorizontalLayout();
@@ -76,21 +64,72 @@ public class MyNotesView extends Div {
 				H2 titel = new H2(folder.getTitel());
 
 				titel.addClickListener(e -> {
+					openFolderID = folder.getId();
 					notes = folder.getNotes();
+					if (notes.isEmpty()) {
+						currentNote = new Note(LEER, LEER, currentFolder);
+						notes.add(currentNote);
+					} else {
+						currentNote = notes.stream().findFirst().orElse(null);
+					}
+					noteList.setItems(notes);
 					currentFolder = folder;
+
+					folderList.setItems(folders);
+				});
+				if (!Objects.equals(folder.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
+					cardLayout.removeAll();
+					cardLayout.add(titel);
+				} else if (Objects.equals(folder.getId(), openFolderID)) {
+					Span open = new Span(createIcon(VaadinIcon.FOLDER_OPEN), new Span("open"));
+
+					open.getElement().getThemeList().add("badge");
+
+					cardLayout.add(titel);
+					cardLayout.add(open);
+				} else {
+					cardLayout.add(titel);
+				}
+				return cardLayout;
+			});
+	private final ComponentRenderer<Component, Note> noteCardRenderer = new ComponentRenderer<>(
+			note -> {
+
+				HorizontalLayout cardLayout = new HorizontalLayout();
+
+				cardLayout.setMargin(true);
+
+				H3 titel = new H3(note.getTitel());
+
+				titel.addClickListener(e -> {
+					openNoteID = note.getId();
+					notesSplit.remove(noteLayout);
+					notesSplit.add(getNormalLayout());
+					currentNote = note;
+
+					noteList.setItems(notes);
 				});
 
-				cardLayout.add(titel);
 
+				if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() == 2) {
+					cardLayout.removeAll();
+					cardLayout.add(titel);
+				} else if (Objects.equals(note.getId(), openNoteID)) {
+					Span open = new Span(createIcon(VaadinIcon.PENCIL), new Span("open"));
+
+					open.getElement().getThemeList().add("badge");
+
+					cardLayout.add(titel);
+					cardLayout.add(open);
+				} else {
+					cardLayout.add(titel);
+				}
 				return cardLayout;
-
 			});
 
 	public MyNotesView(FolderService folderService, NoteService noteService) {
 		this.folderService = folderService;
 		this.noteService = noteService;
-		folders = folderService.list();
-		notes = folders.stream().findFirst().orElse(null).getNotes();
 		setSizeFull();
 		getStyle().set("text-align", "center");
 
@@ -100,51 +139,55 @@ public class MyNotesView extends Div {
 
 	private SplitLayout createContent() {
 
+		folders = this.folderService.list();
+		notes = folders.stream().findFirst().orElse(null).getNotes();
+
 		folderList.setItems(folders);
 		folderList.setRenderer(folderCardRenderer);
+		folderList.setHeightFull();
+		folderList.setMinWidth(MIN_WIDTH);
 
 		noteList.setItems(notes);
 		noteList.setRenderer(noteCardRenderer);
+		noteList.setHeightFull();
+		noteList.setMinWidth(MIN_WIDTH);
 
 		if (folders == null) {
-			currentFolder = new Folder();
+			currentFolder = new Folder(LEER, false, null, null);
+			folderService.update(currentFolder);
 		} else if (notes == null) {
-			currentFolder = folders.stream().findFirst().orElse(null);
-			currentNote = new Note("Leer", "Leer", currentFolder);
+			currentNote = new Note(LEER, LEER, currentFolder);
+			noteService.update(currentNote);
 		} else {
+			currentFolder = folders.stream().findFirst().orElse(null);
 			currentNote = notes.stream().findFirst().orElse(null);
 		}
-		HorizontalLayout notesSplit = new HorizontalLayout();
 
+		notesSplit.setPadding(true);
 		notesSplit.add(noteList);
 		notesSplit.add(getNormalLayout());
 
 		splitLayout = new SplitLayout(folderList, notesSplit);
+		splitLayout.setSplitterPosition(20);
+		splitLayout.setHeightFull();
+		splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_MINIMAL);
 
 		return splitLayout;
-	}
-
-	private HorizontalLayout getLeftSplit() {
-		HorizontalLayout notesSplit = new HorizontalLayout();
-
-		notesSplit.add(noteList);
-		notesSplit.add(getNormalLayout());
-		return notesSplit;
 	}
 
 	private VerticalLayout getNormalLayout() {
 
 		noteLayout.removeAll();
 
-		H2 noteTitel = new H2(currentNote.getTitel());
+		H2 noteTitle = new H2(currentNote.getTitel());
 
 		String valueAsHtml = currentNote.getContent();
 
 		Label label = new Label(valueAsHtml);
 
-		noteButton = new Button(BEARBEITEN, this::editMode);
+		Button noteButton = new Button(BEARBEITEN, this::editMode);
 
-		noteLayout.add(noteTitel, label, noteButton);
+		noteLayout.add(noteTitle, label, noteButton);
 
 		return noteLayout;
 
@@ -154,21 +197,34 @@ public class MyNotesView extends Div {
 
 		noteLayout.removeAll();
 
-		H2 noteTitel = new H2(currentNote.getTitel());
+		TextField noteTitle = new TextField("Titel");
+		noteTitle.setValue(currentNote.getTitel());
+		noteTitle.setClearButtonVisible(true);
 
 		String valueAsHtml = currentNote.getContent();
 
 		textEditor.asHtml().setValue(valueAsHtml);
-		textEditor.addValueChangeListener(e -> {
+
+		Button save = new Button("speichern", e -> {
 
 			currentNote.setContent(textEditor.getValue());
+			currentNote.setTitel(noteTitle.getValue());
 			noteService.update(currentNote);
 
+			notesSplit.remove(noteLayout);
+			notesSplit.add(getNormalLayout());
 		});
+		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-		noteButton = new Button(BEARBEITEN, this::editMode);
+		Button cancel = new Button("abbrechen", buttonClickEvent -> {
+			notesSplit.remove(noteLayout);
+			notesSplit.add(getNormalLayout());
+		});
+		cancel.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-		noteLayout.add(noteTitel, textEditor, noteButton);
+		HorizontalLayout buttonsLayout = new HorizontalLayout(save, cancel);
+
+		noteLayout.add(noteTitle, textEditor, buttonsLayout);
 
 		return noteLayout;
 	}
@@ -177,17 +233,20 @@ public class MyNotesView extends Div {
 
 		if (eB.getSource().getText().equals(BEARBEITEN)) {
 
-			noteButton.setText(NORMAL);
-			splitLayout.remove(noteLayout);
-			add(getNormalLayout());
+			notesSplit.remove(noteLayout);
+			notesSplit.add(getEditLayout());
 
 		} else {
 
-			noteButton.setText(BEARBEITEN);
-			splitLayout.remove(noteLayout);
-			add(getEditLayout());
+			notesSplit.remove(noteLayout);
+			notesSplit.add(getNormalLayout());
 
 		}
 	}
 
+	private Icon createIcon(VaadinIcon vaadinIcon) {
+		Icon icon = vaadinIcon.create();
+		icon.getStyle().set("padding", "var(--lumo-space-xs");
+		return icon;
+	}
 }
