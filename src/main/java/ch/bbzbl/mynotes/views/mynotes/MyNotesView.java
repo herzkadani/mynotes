@@ -139,8 +139,22 @@ public class MyNotesView extends Div {
 
 	private SplitLayout createContent() {
 
-		folders = this.folderService.list();
-		notes = folders.stream().findFirst().orElse(null).getNotes();
+		if (this.folderService.list() == null) {
+			currentFolder = new Folder(LEER, false, null, null);
+			folderService.update(currentFolder);
+			folders = folderService.list();
+			notes = folders.stream().findFirst().get().getNotes();
+		} else if (folders.stream().findFirst().get().getNotes() == null) {
+			currentNote = new Note(LEER, LEER, currentFolder);
+			noteService.update(currentNote);
+			folders = folderService.list();
+			notes = folders.stream().findFirst().get().getNotes();
+		} else {
+			folders = folderService.list();
+			notes = folders.stream().findFirst().get().getNotes();
+			currentFolder = folders.stream().findFirst().orElse(null);
+			currentNote = notes.stream().findFirst().orElse(null);
+		}
 
 		folderList.setItems(folders);
 		folderList.setRenderer(folderCardRenderer);
@@ -151,17 +165,6 @@ public class MyNotesView extends Div {
 		noteList.setRenderer(noteCardRenderer);
 		noteList.setHeightFull();
 		noteList.setMinWidth(MIN_WIDTH);
-
-		if (folders == null) {
-			currentFolder = new Folder(LEER, false, null, null);
-			folderService.update(currentFolder);
-		} else if (notes == null) {
-			currentNote = new Note(LEER, LEER, currentFolder);
-			noteService.update(currentNote);
-		} else {
-			currentFolder = folders.stream().findFirst().orElse(null);
-			currentNote = notes.stream().findFirst().orElse(null);
-		}
 
 		notesSplit.setPadding(true);
 		notesSplit.add(noteList);
