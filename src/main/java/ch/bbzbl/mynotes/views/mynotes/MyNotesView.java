@@ -164,19 +164,42 @@ public class MyNotesView extends Div {
 
 		folderList.setItems(folders);
 		folderList.setRenderer(folderCardRenderer);
-		folderList.setHeightFull();
 		folderList.setMinWidth(MIN_WIDTH);
 
 		noteList.setItems(notes);
 		noteList.setRenderer(noteCardRenderer);
-		noteList.setHeightFull();
 		noteList.setMinWidth(MIN_WIDTH);
 
+		Button addFolder = new Button("Hinzufügen", e ->{
+			currentFolder = new Folder(LEER, false, null, null);
+			folderService.update(currentFolder);
+			currentNote = new Note(LEER, LEER, currentFolder);
+			noteService.update(currentNote);
+			folders = folderService.list();
+			notes = folders.stream().findFirst().get().getNotes();
+
+			folderList.setItems(folders);
+		});
+
+		VerticalLayout listLayout = new VerticalLayout(addFolder, folderList);
+
+		Button addNote = new Button("Hinzufügen", e -> {
+			currentNote = new Note(LEER, LEER, currentFolder);
+			noteService.update(currentNote);
+			folders = folderService.list();
+			notes = folderService.get(currentFolder.getId()).get().getNotes();
+
+			folderList.setItems(folders);
+			noteList.setItems(notes);
+		});
+
+		VerticalLayout listLayoutN = new VerticalLayout(addNote, noteList);
+
 		notesSplit.setPadding(true);
-		notesSplit.add(noteList);
+		notesSplit.add(listLayoutN);
 		notesSplit.add(getNormalLayout());
 
-		splitLayout = new SplitLayout(folderList, notesSplit);
+		splitLayout = new SplitLayout(listLayout, notesSplit);
 		splitLayout.setSplitterPosition(20);
 		splitLayout.setHeightFull();
 		splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_MINIMAL);
