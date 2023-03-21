@@ -17,6 +17,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
+import ch.bbzbl.mynotes.data.Role;
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.views.login.LoginView;
@@ -51,7 +52,6 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 				
 			       OAuth2AuthenticatedPrincipal principal = (OAuth2AuthenticatedPrincipal) authentication.getPrincipal();
 			       
-			       
 			       // Check if the email is already in the database
 			       User existingUser = userService.findByEmail(principal.getAttribute("email"));
 			        if (existingUser != null) {
@@ -59,7 +59,8 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 			            if (existingUser.isOAuthUser()) {
 			                // E-Mail already in use by an OAuth user, login the user
 							SecurityContextHolder.getContext().setAuthentication(authentication);
-			                response.sendRedirect("mynotes");
+			                response.sendRedirect("account");
+			                
 			            } else {
 			                // E-Mail already in use by a normal user, logout and go back to login page with error message
 			            	SecurityContextHolder.getContext().setAuthentication(null);
@@ -76,11 +77,12 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 			            newUser.setEmail(principal.getAttribute("email"));
 			            newUser.setHashedPassword("");
 			            newUser.setOAuthUser(true); // Mark the user as an OAuth user.
+			            newUser.addRole(Role.USER);
 			            userService.save(newUser);
 			            
 			            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		                response.sendRedirect("mynotes");
+		                response.sendRedirect("account");
 			        }
 			       
 			}
