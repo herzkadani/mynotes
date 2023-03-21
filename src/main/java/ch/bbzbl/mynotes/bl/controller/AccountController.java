@@ -1,5 +1,7 @@
 package ch.bbzbl.mynotes.bl.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -28,6 +30,10 @@ public class AccountController {
 	
 	public User getUserById(long id) {
 		return userService.get(id).get();
+	}
+	
+	public List<User> getAllUsers(){
+		return userService.list();
 	}
 	
 }

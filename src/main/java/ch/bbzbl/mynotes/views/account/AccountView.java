@@ -10,23 +10,18 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import ch.bbzbl.mynotes.bl.controller.AccountController;
 import ch.bbzbl.mynotes.components.NotificationFactory;
+import ch.bbzbl.mynotes.components.UserDetailsForm;
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
-import ch.bbzbl.mynotes.security.PasswordEncoder;
 import ch.bbzbl.mynotes.views.MainLayout;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
@@ -44,12 +39,8 @@ import jakarta.annotation.security.PermitAll;
 public class AccountView extends HorizontalLayout {
 
 	// Components
-	FormLayout layForm;
-	private TextField txtUsername;
-	private TextField txtName;
-	private EmailField txtEmail;
-	private PasswordField txtPassword;
-	private PasswordField txtRepeatPassword;
+	UserDetailsForm layForm;
+	
 	private Button btnSave;
 
 	// Members
@@ -58,18 +49,10 @@ public class AccountView extends HorizontalLayout {
 	@Autowired
 	private AccountController accountController;
 	private User user;
-	private Binder<User> userBinder;
 
 	public AccountView() {
-		layForm = new FormLayout();
-		txtUsername = new TextField("Username");
-		txtName = new TextField("Full Name");
-		txtEmail = new EmailField("E-Mail");
-		txtPassword = new PasswordField("New Password");
-		txtRepeatPassword = new PasswordField("Repeat New Password");
+		
 		btnSave = new Button("Save");
-
-		userBinder = new Binder<>(User.class);
 	}
 
 	/**
@@ -91,59 +74,10 @@ public class AccountView extends HorizontalLayout {
 			authenticatedUser.logout();
 			UI.getCurrent().navigate("login");
 		}
-
-		// configure fields
-		txtUsername.setRequired(true);
-		txtName.setRequired(true);
-		txtEmail.setRequired(true);
+		layForm = new UserDetailsForm(user, false);
 		
-		if(user.isOAuthUser()) {
-			txtUsername.setReadOnly(true);
-			txtEmail.setReadOnly(true);
-			txtPassword.setVisible(false);
-			txtRepeatPassword.setVisible(false);
-		}
-
-		// bind fields
-		userBinder.forField(txtUsername).withValidator(v -> {
-			// username hasn't been changed, no validation needed
-			if (user.getUsername().equals(v))
-				return true;
-			// if username already taken, return false
-			return !accountController.usernameAlreadyTaken(v);
-		}, "Username already taken").bind(User::getUsername, (bindUser, string) -> {
-			// OAuth users can't change username
-			if (!bindUser.isOAuthUser())
-				bindUser.setUsername(string);
-		});
-
-		userBinder.forField(txtName).bind(User::getName, User::setName);
-
-		userBinder.forField(txtEmail).withValidator(new EmailValidator("Enter a valid E-Mail")).bind(User::getEmail,
-				(bindUser, string) -> {
-					// OAuth users can't change email
-					if (!bindUser.isOAuthUser())
-						bindUser.setEmail(string);
-				});
-
-		userBinder.bind(txtPassword, bindUser -> null, (bindUser, value) -> {
-			// OAuth Users can't set a password
-			if (!bindUser.isOAuthUser())
-				bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
-		});
-
-		userBinder.forField(txtRepeatPassword)
-				// validate if first and second passwords match
-				.withValidator(value -> value.equals(txtPassword.getValue()), "Passwords don't match")
-				.bind(bindUser -> null, (bindUser, value) -> {
-					// OAuth Users can't set a password
-					if (!bindUser.isOAuthUser())
-						bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
-
-				});
-
 		// load existing data from user object
-		userBinder.readBean(user);
+		layForm.getUserBinder().readBean(user);
 
 		// save button
 		btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -151,7 +85,7 @@ public class AccountView extends HorizontalLayout {
 
 		// form layout
 		layForm.setWidth("600px");
-		layForm.add(txtUsername, txtName, txtEmail, txtPassword, txtRepeatPassword, btnSave);
+		layForm.add(btnSave);
 		add(layForm);
 	}
 
@@ -160,12 +94,12 @@ public class AccountView extends HorizontalLayout {
 			String oldUsername = user.getUsername();
 
 			// write data in database
-			userBinder.writeBean(user);
+			layForm.getUserBinder().writeBean(user);
 			accountController.updateUser(user);
 
 			// get data from database to retrieve the new version
 			user = accountController.getUserById(user.getId());
-			userBinder.readBean(user);
+			layForm.getUserBinder().readBean(user);
 
 			NotificationFactory.successNotification("data saved").open();
 

@@ -86,6 +86,15 @@ public class User extends AbstractEntity {
 	public void setOAuthUser(boolean isOAuthUser) {
 		this.isOAuthUser = isOAuthUser;
 	}
+
+	public void addRole(Role user) {
+		// add role
+        if (roles == null) {
+            roles = Set.of(user);
+        } else {
+        	roles.add(user);
+        }
+	}
     
     
 
