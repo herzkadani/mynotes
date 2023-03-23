@@ -307,7 +307,7 @@ public class MyNotesView extends Div {
 		splitLayout = new SplitLayout(listLayout, notesSplit);
 		splitLayout.setSplitterPosition(20);
 		splitLayout.setHeightFull();
-		splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_MINIMAL);
+		splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
 
 		return splitLayout;
 	}
