@@ -98,14 +98,11 @@ public class MyNotesView extends Div {
 
 				editTitel.setValue(titel.getText());
 
-				editTitel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-
-					folder.setTitel(editTitel.getValue());
-					folderService.update(folder);
-				});
-				
 				Icon finish = createIcon(VaadinIcon.CHECK);
 				finish.getElement().getThemeList().add("badge success");
+
+				Icon close = createIcon(VaadinIcon.CLOSE_SMALL);
+				close.getElement().getThemeList().add("badge error");
 
 				Icon edit = createIcon(VaadinIcon.PENCIL);
 				edit.getElement().getThemeList().add("badge");
@@ -114,6 +111,23 @@ public class MyNotesView extends Div {
 					cardLayout.remove(editTitel);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
+					cardLayout.remove(close);
+					cardLayout.add(titel);
+					cardLayout.add(edit);
+
+
+					folder.setTitel(editTitel.getValue());
+					folderService.update(folder);
+
+					folderList.setItems(folders);
+				});
+
+
+				close.addClickListener(iconClickEvent -> {
+					cardLayout.remove(editTitel);
+					cardLayout.remove(edit);
+					cardLayout.remove(finish);
+					cardLayout.remove(close);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 
@@ -125,6 +139,7 @@ public class MyNotesView extends Div {
 					cardLayout.remove(edit);
 					cardLayout.add(editTitel);
 					cardLayout.add(finish);
+					cardLayout.add(close);
 				});
 
 				if (!Objects.equals(folder.getId(), openNoteID) && cardLayout.getChildren().count() >= 3) {
@@ -170,12 +185,13 @@ public class MyNotesView extends Div {
 
 				editTitel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
 
-					note.setTitel(editTitel.getValue());
-					noteService.update(note);
 				});
 
 				Icon finish = createIcon(VaadinIcon.CHECK);
 				finish.getElement().getThemeList().add("badge success");
+
+				Icon close = createIcon(VaadinIcon.CLOSE_SMALL);
+				close.getElement().getThemeList().add("badge error");
 
 				Icon edit = createIcon(VaadinIcon.PENCIL);
 				edit.getElement().getThemeList().add("badge");
@@ -184,6 +200,21 @@ public class MyNotesView extends Div {
 					cardLayout.remove(editTitel);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
+					cardLayout.remove(close);
+					cardLayout.add(titel);
+					cardLayout.add(edit);
+
+					note.setTitel(editTitel.getValue());
+					noteService.update(note);
+
+					noteList.setItems(note.getFolder().getNotes());
+				});
+
+				close.addClickListener(iconClickEvent -> {
+					cardLayout.remove(editTitel);
+					cardLayout.remove(edit);
+					cardLayout.remove(finish);
+					cardLayout.remove(close);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 
@@ -195,6 +226,7 @@ public class MyNotesView extends Div {
 					cardLayout.remove(edit);
 					cardLayout.add(editTitel);
 					cardLayout.add(finish);
+					cardLayout.add(close);
 				});
 
 				if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() >= 3) {
