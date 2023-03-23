@@ -29,7 +29,7 @@ public class User extends AbstractEntity {
 	private Set<Role> roles;
 	@Email
 	private String email;
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Folder> folders = null;
 
 	public String getUsername() {
