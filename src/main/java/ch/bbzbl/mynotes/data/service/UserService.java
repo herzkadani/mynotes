@@ -1,11 +1,13 @@
 package ch.bbzbl.mynotes.data.service;
 
+import ch.bbzbl.mynotes.data.entity.Folder;
 import ch.bbzbl.mynotes.data.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,6 +46,15 @@ public class UserService {
 	public int countByUsername(String username) {
 		return repository.countByUsername(username);
 
+	}
+
+	public List<Folder> getFoldersByUserId(Long id){
+		Optional<User> optionalUser = repository.findById(id);
+		if (optionalUser.isPresent()){
+			User user = optionalUser.get();
+			return user.getFolders();
+		}
+		return null;
 	}
 
 }
