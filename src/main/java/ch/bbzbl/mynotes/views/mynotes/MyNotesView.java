@@ -219,7 +219,7 @@ public class MyNotesView extends Div {
 	private void newFolderOrNote(boolean sourceFromFolderButton) {
 		Dialog dialog;
 		dialog = new Dialog();
-		dialog.setHeaderTitle("Neue Firma");
+		dialog.setHeaderTitle("Name");
 
 		VerticalLayout dialogLayout = createDialogLayout();
 
