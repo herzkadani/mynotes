@@ -37,6 +37,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
 import java.util.Objects;
@@ -434,8 +435,26 @@ public class MyNotesView extends Div {
 
 			currentNote.setContent(textEditor.getValue());
 			currentNote.setTitel(noteTitle.getValue());
-			noteService.update(currentNote);
+			try {
+				noteService.update(currentNote);
+			} catch (ObjectOptimisticLockingFailureException oolfe) {
+				Dialog dialog;
+				dialog = new Dialog();
+				dialog.setHeaderTitle("Warnung");
 
+				Label label = new Label("Es git eine neuere Version dieser Notiz");
+				dialog.add(label);
+
+				Button acept = new Button("OK", be -> dialog.close());
+				acept.addClickShortcut(Key.ENTER);
+				acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+				dialog.getFooter().add(acept);
+
+				add(dialog);
+
+				dialog.open();
+			}
 			notesSplit.remove(noteLayout);
 			notesSplit.add(getNormalLayout());
 		});
