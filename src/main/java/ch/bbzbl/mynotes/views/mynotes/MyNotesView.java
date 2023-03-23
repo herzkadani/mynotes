@@ -83,7 +83,26 @@ public class MyNotesView extends Div {
 					notes = folder.getNotes();
 					if (notes.isEmpty()) {
 						currentNote = new Note(LEER, LEER, currentFolder);
-						noteService.update(currentNote);
+						try {
+							noteService.update(currentNote);
+						} catch (ObjectOptimisticLockingFailureException oolfe) {
+							Dialog dialog;
+							dialog = new Dialog();
+							dialog.setHeaderTitle("Warnung");
+
+							Label label = new Label("Es gibt eine neuere Version dieser Notiz");
+							dialog.add(label);
+
+							Button acept = new Button("OK", be -> dialog.close());
+							acept.addClickShortcut(Key.ENTER);
+							acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+							dialog.getFooter().add(acept);
+
+							add(dialog);
+
+							dialog.open();
+						}
 						notes = userService.getFoldersByUserId(user.getId()).stream().filter(ffolder -> ffolder.getId() == openFolderID).findFirst().get().getNotes();
 
 					} else {
@@ -148,12 +167,8 @@ public class MyNotesView extends Div {
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				} else if (Objects.equals(folder.getId(), openFolderID)) {
-					Span open = new Span(createIcon(VaadinIcon.FOLDER_OPEN), new Span("open"));
-
-					open.getElement().getThemeList().add("badge");
-
+					titel.getStyle().set("color", "#c64343");
 					cardLayout.add(titel);
-					cardLayout.add(open);
 					cardLayout.add(edit);
 				} else {
 					cardLayout.add(titel);
@@ -206,7 +221,26 @@ public class MyNotesView extends Div {
 					cardLayout.add(edit);
 
 					note.setTitel(editTitel.getValue());
-					noteService.update(note);
+					try {
+						noteService.update(currentNote);
+					} catch (ObjectOptimisticLockingFailureException oolfe) {
+						Dialog dialog;
+						dialog = new Dialog();
+						dialog.setHeaderTitle("Warnung");
+
+						Label label = new Label("Es gibt eine neuere Version dieser Notiz");
+						dialog.add(label);
+
+						Button acept = new Button("OK", be -> dialog.close());
+						acept.addClickShortcut(Key.ENTER);
+						acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+						dialog.getFooter().add(acept);
+
+						add(dialog);
+
+						dialog.open();
+					}
 
 					noteList.setItems(note.getFolder().getNotes());
 				});
@@ -236,12 +270,8 @@ public class MyNotesView extends Div {
 					cardLayout.add(edit);
 
 				} else if (Objects.equals(note.getId(), openNoteID)) {
-					Span open = new Span(createIcon(VaadinIcon.FOLDER_OPEN_O), new Span("open"));
-
-					open.getElement().getThemeList().add("badge");
-
+					titel.getStyle().set("color", "#c64343");
 					cardLayout.add(titel);
-					cardLayout.add(open);
 					cardLayout.add(edit);
 				} else {
 					cardLayout.add(titel);
@@ -442,7 +472,7 @@ public class MyNotesView extends Div {
 				dialog = new Dialog();
 				dialog.setHeaderTitle("Warnung");
 
-				Label label = new Label("Es git eine neuere Version dieser Notiz");
+				Label label = new Label("Es gibt eine neuere Version dieser Notiz");
 				dialog.add(label);
 
 				Button acept = new Button("OK", be -> dialog.close());
