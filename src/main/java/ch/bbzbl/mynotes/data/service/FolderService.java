@@ -4,9 +4,13 @@ import ch.bbzbl.mynotes.data.entity.Folder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+@Service
 public class FolderService {
 
     private FolderRepository repository;
@@ -27,15 +31,26 @@ public class FolderService {
         repository.deleteById(id);
     }
 
-    public Page<Folder> list(Pageable pageable) {
-        return repository.findAll(pageable);
+    public List<Folder> list() {
+        return repository.findAll();
     }
 
     public Page<Folder> list(Pageable pageable, Specification<Folder> filter) {
         return repository.findAll(filter, pageable);
     }
+
     public int count() {
         return (int) repository.count();
     }
 
+    public List<Folder> getPublicFolders() {
+        List<Folder> folders = new ArrayList<>();
+
+        for (Folder folder : repository.findAll()) {
+            if (folder.isPublic()) {
+                folders.add(folder);
+            }
+        }
+        return folders;
+    }
 }

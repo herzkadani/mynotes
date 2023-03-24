@@ -57,6 +57,7 @@
 			<url>
                 https://maven.vaadin.com/vaadin-prereleases/
             </url>
+            
 		</pluginRepository>
 	</pluginRepositories>
 	<dependencyManagement>
@@ -121,6 +122,11 @@
 			<artifactId>vaadin-testbench-junit5</artifactId>
 			<scope>test</scope>
 		</dependency>
+    <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<defaultGoal>spring-boot:run</defaultGoal>

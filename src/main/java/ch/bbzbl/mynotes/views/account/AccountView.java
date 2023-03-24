@@ -1,8 +1,11 @@
 package ch.bbzbl.mynotes.views.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-
+import ch.bbzbl.mynotes.bl.controller.AccountController;
+import ch.bbzbl.mynotes.data.entity.User;
+import ch.bbzbl.mynotes.security.AuthenticatedUser;
+import ch.bbzbl.mynotes.security.PasswordEncoder;
+import ch.bbzbl.mynotes.views.MainLayout;
+import ch.bbzbl.mynotes.views.components.NotificationFactory;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
@@ -10,6 +13,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
+
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
@@ -23,14 +28,17 @@ import ch.bbzbl.mynotes.components.UserDetailsForm;
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
 import ch.bbzbl.mynotes.views.MainLayout;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
  * Account View
  * 
- * @author Dani Herzka
  *
+ * @author Dani Herzka
  */
 @PageTitle("Account")
 @Route(value = "account", layout = MainLayout.class)
@@ -74,6 +82,7 @@ public class AccountView extends HorizontalLayout {
 			authenticatedUser.logout();
 			UI.getCurrent().navigate("login");
 		}
+
 		layForm = new UserDetailsForm(user, false);
 		
 		// load existing data from user object
@@ -93,8 +102,10 @@ public class AccountView extends HorizontalLayout {
 		try {
 			String oldUsername = user.getUsername();
 
+
 			// write data in database
 			layForm.getUserBinder().writeBean(user);
+
 			accountController.updateUser(user);
 
 			// get data from database to retrieve the new version

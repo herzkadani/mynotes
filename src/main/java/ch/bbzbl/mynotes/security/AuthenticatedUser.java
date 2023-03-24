@@ -1,5 +1,11 @@
 package ch.bbzbl.mynotes.security;
 
+
+import ch.bbzbl.mynotes.data.service.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.List;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +15,7 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.data.service.UserService;
+
 
 @Component
 public class AuthenticatedUser {
