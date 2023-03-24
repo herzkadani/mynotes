@@ -1,4 +1,4 @@
-package ch.bbzbl.mynotes.views.components;
+package ch.bbzbl.mynotes.components;
 
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;

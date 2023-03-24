@@ -53,4 +53,12 @@ local.properties
 .factorypath
 
 
+## Vaadin
 *generated*
+tsconfig.json
+types.d.ts
+vite.d.ts
+vite.config.ts
+package-lock.json
+package.json
+
