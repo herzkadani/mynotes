@@ -10,6 +10,7 @@ import ch.bbzbl.mynotes.security.AuthenticatedUser;
 import ch.bbzbl.mynotes.views.MainLayout;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -17,9 +18,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -51,6 +50,7 @@ public class MyNotesView extends Div {
 	public static final String LEER = "Leer";
 	public static final String MIN_WIDTH = "300px";
 	public static final String BEARBEITEN = "Bearbeiten";
+	public static final String WARNING = "Warning";
 	private final VerticalLayout noteLayout = new VerticalLayout();
 	VirtualList<Folder> folderList = new VirtualList<>();
 	VirtualList<Note> noteList = new VirtualList<>();
@@ -76,33 +76,14 @@ public class MyNotesView extends Div {
 				HorizontalLayout cardLayout = new HorizontalLayout();
 				cardLayout.setMargin(true);
 
-				H2 titel = new H2(folder.getTitel());
-
-				titel.addClickListener(e -> {
+				TextField titel = new TextField();
+				titel.setValue(folder.getTitel());
+				titel.getElement().addEventListener("click", e -> {
 					openFolderID = folder.getId();
 					notes = folder.getNotes();
 					if (notes.isEmpty()) {
 						currentNote = new Note(LEER, LEER, currentFolder);
-						try {
-							noteService.update(currentNote);
-						} catch (ObjectOptimisticLockingFailureException oolfe) {
-							Dialog dialog;
-							dialog = new Dialog();
-							dialog.setHeaderTitle("Warnung");
-
-							Label label = new Label("Es gibt eine neuere Version dieser Notiz");
-							dialog.add(label);
-
-							Button acept = new Button("OK", be -> dialog.close());
-							acept.addClickShortcut(Key.ENTER);
-							acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
-
-							dialog.getFooter().add(acept);
-
-							add(dialog);
-
-							dialog.open();
-						}
+						updateNote();
 						notes = userService.getFoldersByUserId(user.getId()).stream().filter(ffolder -> ffolder.getId() == openFolderID).findFirst().get().getNotes();
 
 					} else {
@@ -114,10 +95,6 @@ public class MyNotesView extends Div {
 					folderList.setItems(folders);
 				});
 
-				TextField editTitel = new TextField();
-
-				editTitel.setValue(titel.getText());
-
 				Icon finish = createIcon(VaadinIcon.CHECK);
 				finish.getElement().getThemeList().add("badge success");
 
@@ -125,26 +102,24 @@ public class MyNotesView extends Div {
 				close.getElement().getThemeList().add("badge error");
 
 				Icon edit = createIcon(VaadinIcon.PENCIL);
-				edit.getElement().getThemeList().add("badge");
 
 				finish.addClickListener(iconClickEvent -> {
-					cardLayout.remove(editTitel);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
 					cardLayout.remove(close);
-					cardLayout.add(titel);
+					titel.setReadOnly(true);
 					cardLayout.add(edit);
 
 
-					folder.setTitel(editTitel.getValue());
-					folderService.update(folder);
+					folder.setTitel(titel.getValue());
+					updateFolder();
 
 					folderList.setItems(folders);
 				});
 
 
 				close.addClickListener(iconClickEvent -> {
-					cardLayout.remove(editTitel);
+					titel.setReadOnly(true);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
 					cardLayout.remove(close);
@@ -155,22 +130,24 @@ public class MyNotesView extends Div {
 				});
 
 				edit.addClickListener(iconClickEvent -> {
-					cardLayout.remove(titel);
+					titel.setReadOnly(false);
 					cardLayout.remove(edit);
-					cardLayout.add(editTitel);
 					cardLayout.add(finish);
 					cardLayout.add(close);
 				});
 
-				if (!Objects.equals(folder.getId(), openNoteID) && cardLayout.getChildren().count() >= 3) {
+				if (!Objects.equals(folder.getId(), openFolderID) && cardLayout.getChildren().count() >= 3) {
 					cardLayout.removeAll();
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				} else if (Objects.equals(folder.getId(), openFolderID)) {
 					titel.getStyle().set("color", "#c64343");
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				} else {
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				}
@@ -183,9 +160,9 @@ public class MyNotesView extends Div {
 
 				cardLayout.setMargin(true);
 
-				H3 titel = new H3(note.getTitel());
-
-				titel.addClickListener(e -> {
+				TextField titel = new TextField();
+				titel.setValue(note.getTitel());
+				titel.getElement().addEventListener("click", e -> {
 					openNoteID = note.getId();
 					currentNote = note;
 					notesSplit.remove(noteLayout);
@@ -195,14 +172,6 @@ public class MyNotesView extends Div {
 					noteList.setItems(note.getFolder().getNotes());
 				});
 
-				TextField editTitel = new TextField();
-
-				editTitel.setValue(titel.getText());
-
-				editTitel.addValueChangeListener(textFieldStringComponentValueChangeEvent -> {
-
-				});
-
 				Icon finish = createIcon(VaadinIcon.CHECK);
 				finish.getElement().getThemeList().add("badge success");
 
@@ -210,47 +179,25 @@ public class MyNotesView extends Div {
 				close.getElement().getThemeList().add("badge error");
 
 				Icon edit = createIcon(VaadinIcon.PENCIL);
-				edit.getElement().getThemeList().add("badge");
 
 				finish.addClickListener(iconClickEvent -> {
-					cardLayout.remove(editTitel);
+					titel.setReadOnly(true);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
 					cardLayout.remove(close);
-					cardLayout.add(titel);
 					cardLayout.add(edit);
 
-					note.setTitel(editTitel.getValue());
-					try {
-						noteService.update(currentNote);
-					} catch (ObjectOptimisticLockingFailureException oolfe) {
-						Dialog dialog;
-						dialog = new Dialog();
-						dialog.setHeaderTitle("Warnung");
-
-						Label label = new Label("Es gibt eine neuere Version dieser Notiz");
-						dialog.add(label);
-
-						Button acept = new Button("OK", be -> dialog.close());
-						acept.addClickShortcut(Key.ENTER);
-						acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
-
-						dialog.getFooter().add(acept);
-
-						add(dialog);
-
-						dialog.open();
-					}
+					note.setTitel(titel.getValue());
+					updateNote();
 
 					noteList.setItems(note.getFolder().getNotes());
 				});
 
 				close.addClickListener(iconClickEvent -> {
-					cardLayout.remove(editTitel);
+					titel.setReadOnly(true);
 					cardLayout.remove(edit);
 					cardLayout.remove(finish);
 					cardLayout.remove(close);
-					cardLayout.add(titel);
 					cardLayout.add(edit);
 
 					noteList.setItems(note.getFolder().getNotes());
@@ -259,21 +206,24 @@ public class MyNotesView extends Div {
 				edit.addClickListener(iconClickEvent -> {
 					cardLayout.remove(titel);
 					cardLayout.remove(edit);
-					cardLayout.add(editTitel);
+					titel.setReadOnly(false);
 					cardLayout.add(finish);
 					cardLayout.add(close);
 				});
 
 				if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() >= 3) {
-					cardLayout.removeAll();
+
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 
 				} else if (Objects.equals(note.getId(), openNoteID)) {
 					titel.getStyle().set("color", "#c64343");
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				} else {
+					titel.setReadOnly(true);
 					cardLayout.add(titel);
 					cardLayout.add(edit);
 				}
@@ -301,7 +251,7 @@ public class MyNotesView extends Div {
 		} else if (userService.getFoldersByUserId(user.getId()).stream().findFirst().get().getNotes().isEmpty()) {
 			currentFolder = folders.stream().findFirst().orElse(null);
 			currentNote = new Note(LEER, LEER, currentFolder);
-			noteService.update(currentNote);
+			updateNote();
 			folders = userService.getFoldersByUserId(user.getId());
 			notes = folders.stream().findFirst().get().getNotes();
 		} else {
@@ -359,7 +309,7 @@ public class MyNotesView extends Div {
 	private void newFolderOrNote(boolean sourceFromFolderButton) {
 		Dialog dialog;
 		dialog = new Dialog();
-		dialog.setHeaderTitle("Name");
+		dialog.setHeaderTitle("Neu");
 
 		VerticalLayout dialogLayout = createDialogLayout(sourceFromFolderButton);
 
@@ -367,11 +317,7 @@ public class MyNotesView extends Div {
 
 		Button saveButton = new Button("speichern", b -> {
 			if (sourceFromFolderButton) {
-				if (radioGroup.getValue() == "public") {
-					emptyFolder(popupField.getValue(), true);
-				} else {
-					emptyFolder(popupField.getValue(), false);
-				}
+				emptyFolder(popupField.getValue(), Objects.equals(radioGroup.getValue(), "public"));
 
 			} else {
 				newNote(popupField.getValue());
@@ -395,7 +341,7 @@ public class MyNotesView extends Div {
 
 	private void newNote(String titel) {
 		currentNote = new Note(titel, LEER, currentFolder);
-		noteService.update(currentNote);
+		updateNote();
 		folders = userService.getFoldersByUserId(user.getId());
 		notes = userService.getFoldersByUserId(user.getId()).stream().filter(folder -> folder.getId() == openFolderID).findFirst().get().getNotes();
 
@@ -406,6 +352,7 @@ public class MyNotesView extends Div {
 	private VerticalLayout createDialogLayout(boolean sourceFromFolderButton) {
 
 		VerticalLayout verticalLayout = new VerticalLayout();
+		popupField.setLabel("Name");
 		verticalLayout.add(popupField);
 		if (sourceFromFolderButton) {
 			radioGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
@@ -424,11 +371,48 @@ public class MyNotesView extends Div {
 
 	private void emptyFolder(String titel, boolean visibility) {
 		currentFolder = new Folder(titel, visibility, null, user);
-		folderService.update(currentFolder);
+		updateFolder();
 		currentNote = new Note(LEER, LEER, currentFolder);
-		noteService.update(currentNote);
+		updateNote();
 		folders = userService.getFoldersByUserId(user.getId());
 		notes = folders.stream().findFirst().get().getNotes();
+	}
+
+	private void updateFolder() {
+		try {
+			folderService.update(currentFolder);
+		} catch (ObjectOptimisticLockingFailureException oolfe) {
+			openWarningDialog();
+
+		}
+	}
+
+	private void updateNote() {
+		try {
+			noteService.update(currentNote);
+		} catch (ObjectOptimisticLockingFailureException oolfe) {
+			openWarningDialog();
+
+		}
+	}
+
+	private void openWarningDialog() {
+		Dialog dialog;
+		dialog = new Dialog();
+		dialog.setHeaderTitle(WARNING);
+
+		dialog.add(new Html(
+				"<p>There has been a version conflict. Someone has just edited the same data and saved it before you. Click <a onClick=\"window.location.reload()\" style=\"color:#0044CC;\">here</a> to reload the page.</p>"));
+
+		Button acept = new Button("OK", be -> dialog.close());
+		acept.addClickShortcut(Key.ENTER);
+		acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+		dialog.getFooter().add(acept);
+
+		add(dialog);
+
+		dialog.open();
 	}
 
 	private VerticalLayout getNormalLayout() {
@@ -465,26 +449,7 @@ public class MyNotesView extends Div {
 
 			currentNote.setContent(textEditor.getValue());
 			currentNote.setTitel(noteTitle.getValue());
-			try {
-				noteService.update(currentNote);
-			} catch (ObjectOptimisticLockingFailureException oolfe) {
-				Dialog dialog;
-				dialog = new Dialog();
-				dialog.setHeaderTitle("Warnung");
-
-				Label label = new Label("Es gibt eine neuere Version dieser Notiz");
-				dialog.add(label);
-
-				Button acept = new Button("OK", be -> dialog.close());
-				acept.addClickShortcut(Key.ENTER);
-				acept.addThemeVariants(ButtonVariant.LUMO_ERROR);
-
-				dialog.getFooter().add(acept);
-
-				add(dialog);
-
-				dialog.open();
-			}
+			updateNote();
 			notesSplit.remove(noteLayout);
 			notesSplit.add(getNormalLayout());
 		});
