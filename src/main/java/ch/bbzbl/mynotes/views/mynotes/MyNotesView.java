@@ -423,7 +423,8 @@ public class MyNotesView extends Div {
 
 		String valueAsHtml = currentNote.getContent();
 
-		Label label = new Label(valueAsHtml);
+		Html label = new Html("<div>"+valueAsHtml+"</div>");
+		
 
 		Button noteButton = new Button(BEARBEITEN, this::editMode);
 
