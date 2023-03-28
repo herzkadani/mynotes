@@ -14,13 +14,9 @@ public class AccountController {
 	@Autowired
 	private UserService userService;
 	
-//	public User getUserFromDatabase(AuthenticatedUser authenticatedUser) {
-//		
-//	}
 	
 	public boolean usernameAlreadyTaken(String username) {
-		if (userService.countByUsername(username)>0) return true;
-		return false;
+		return userService.countByUsername(username)>0 ;
 	}
 
 	public void updateUser(User user) {

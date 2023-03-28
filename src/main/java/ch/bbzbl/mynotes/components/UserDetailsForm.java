@@ -32,12 +32,13 @@ public class UserDetailsForm extends FormLayout {
 	private MultiSelectComboBox<Role> cmbRole;
 	private Binder<User> userBinder;
 
-	@Autowired
 	private AccountController accountController;
 	
 	
 
-	public UserDetailsForm(User user, boolean isAdminView) {
+	public UserDetailsForm(User user, boolean isAdminView, AccountController accountController) {
+		this.accountController = accountController;
+		
 		userBinder = new Binder<>(User.class);
 		
 		txtUsername = new TextField("Username");
@@ -88,7 +89,8 @@ public class UserDetailsForm extends FormLayout {
 
 		userBinder.bind(txtPassword, bindUser -> null, (bindUser, value) -> {
 			// OAuth Users can't set a password
-			if (!bindUser.isOAuthUser())
+			
+			if (!bindUser.isOAuthUser() && !txtPassword.getValue().isBlank())
 				bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
 		});
 
@@ -97,7 +99,7 @@ public class UserDetailsForm extends FormLayout {
 				.withValidator(value -> value.equals(txtPassword.getValue()), "Passwords don't match")
 				.bind(bindUser -> null, (bindUser, value) -> {
 					// OAuth Users can't set a password
-					if (!bindUser.isOAuthUser())
+					if (!bindUser.isOAuthUser() && !txtPassword.getValue().isBlank())
 						bindUser.setHashedPassword(PasswordEncoder.encodePassoword(value));
 
 				});

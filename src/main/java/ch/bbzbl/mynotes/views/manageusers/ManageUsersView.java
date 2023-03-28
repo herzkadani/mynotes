@@ -22,6 +22,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import ch.bbzbl.mynotes.bl.controller.AccountController;
 import ch.bbzbl.mynotes.bl.controller.ManageUsersController;
 import ch.bbzbl.mynotes.components.NotificationFactory;
 import ch.bbzbl.mynotes.components.UserDetailsForm;
@@ -38,8 +39,10 @@ public class ManageUsersView extends Div {
 	private final Grid<User> grid = new Grid<>(User.class, false);
 
 	private final ManageUsersController manageUsersController;
+	private final AccountController accountController;
 
-	public ManageUsersView(ManageUsersController manageUsersController) {
+	public ManageUsersView(ManageUsersController manageUsersController, AccountController accountController) {
+		this.accountController = accountController;
 		this.manageUsersController = manageUsersController;
 
 		addClassNames("account-view");
@@ -103,7 +106,7 @@ public class ManageUsersView extends Div {
 	 */
 	private void editButtonClickEvent(ClickEvent<Button> event, User user) {
 		Dialog editUserDialog = new Dialog();
-		UserDetailsForm userForm = new UserDetailsForm(user, true);
+		UserDetailsForm userForm = new UserDetailsForm(user, true, accountController);
 
 				
 		Button cancel = new Button("Cancel");

@@ -2,6 +2,7 @@ package ch.bbzbl.mynotes.views.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Html;
@@ -15,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 
 import ch.bbzbl.mynotes.bl.controller.AccountController;
 import ch.bbzbl.mynotes.components.NotificationFactory;
@@ -74,7 +76,7 @@ public class AccountView extends HorizontalLayout {
 			UI.getCurrent().navigate("login");
 		}
 
-		layForm = new UserDetailsForm(user, false);
+		layForm = new UserDetailsForm(user, false, accountController);
 		
 		// load existing data from user object
 		layForm.getUserBinder().readBean(user);
