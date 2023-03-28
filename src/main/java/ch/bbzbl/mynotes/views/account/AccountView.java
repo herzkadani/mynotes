@@ -106,6 +106,7 @@ public class AccountView extends HorizontalLayout {
 			layForm.getUserBinder().readBean(user);
 
 			NotificationFactory.successNotification("data saved").open();
+			UI.getCurrent().getPage().reload();
 
 			// logout if username has been changed
 			String newUsername = user.getUsername();
