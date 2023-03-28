@@ -1,11 +1,8 @@
 package ch.bbzbl.mynotes.views.account;
 
-import ch.bbzbl.mynotes.bl.controller.AccountController;
-import ch.bbzbl.mynotes.data.entity.User;
-import ch.bbzbl.mynotes.security.AuthenticatedUser;
-import ch.bbzbl.mynotes.security.PasswordEncoder;
-import ch.bbzbl.mynotes.views.MainLayout;
-import ch.bbzbl.mynotes.views.components.NotificationFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
@@ -13,11 +10,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -28,11 +22,8 @@ import ch.bbzbl.mynotes.components.UserDetailsForm;
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
 import ch.bbzbl.mynotes.views.MainLayout;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
  * Account View
