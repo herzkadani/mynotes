@@ -23,7 +23,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import ch.bbzbl.mynotes.bl.controller.AccountController;
-import ch.bbzbl.mynotes.bl.controller.ManageUsersController;
 import ch.bbzbl.mynotes.components.NotificationFactory;
 import ch.bbzbl.mynotes.components.UserDetailsForm;
 import ch.bbzbl.mynotes.data.Role;
@@ -38,12 +37,10 @@ public class ManageUsersView extends Div {
 
 	private final Grid<User> grid = new Grid<>(User.class, false);
 
-	private final ManageUsersController manageUsersController;
 	private final AccountController accountController;
 
-	public ManageUsersView(ManageUsersController manageUsersController, AccountController accountController) {
+	public ManageUsersView(AccountController accountController) {
 		this.accountController = accountController;
-		this.manageUsersController = manageUsersController;
 
 		addClassNames("account-view");
 
@@ -69,7 +66,7 @@ public class ManageUsersView extends Div {
 			deleteButton.addClickListener(event -> deleteButtonClickEvent(event, user));
 			return deleteButton;
 		}).setHeader("Delete");
-		grid.setItems(manageUsersController.getAllUsers());
+		grid.setItems(accountController.getAllUsers());
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
 		add(grid);
@@ -92,7 +89,7 @@ public class ManageUsersView extends Div {
 		dialogConfirmDelete.setConfirmText("Delete");
 		dialogConfirmDelete.setConfirmButtonTheme("error primary");
 		dialogConfirmDelete.addConfirmListener(ev->{
-			manageUsersController.delete(user);
+			accountController.delete(user);
 			refreshGrid();
 		});
 		
@@ -124,7 +121,7 @@ public class ManageUsersView extends Div {
 			try {
 				
 				userForm.getUserBinder().writeBean(user);
-				manageUsersController.updateUser(user);
+				accountController.updateUser(user);
 				editUserDialog.close();
 				refreshGrid();
 				NotificationFactory.successNotification("Data updated").open();
@@ -146,7 +143,7 @@ public class ManageUsersView extends Div {
 	 */
 	private void refreshGrid() {
 		grid.select(null);
-		grid.setItems(manageUsersController.getAllUsers());
+		grid.setItems(accountController.getAllUsers());
 	}
 
 	private Component createRoleBadges(Set<Role> roles) {

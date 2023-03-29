@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.data.service.UserService;
+import jakarta.transaction.Transactional;
 
 @Controller
 public class AccountController {
@@ -32,4 +33,8 @@ public class AccountController {
 		return userService.list();
 	}
 	
+	@Transactional
+	public void delete(User user) {
+		userService.delete(user.getId());
+	}
 }
