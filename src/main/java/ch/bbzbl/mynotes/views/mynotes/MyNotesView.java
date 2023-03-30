@@ -8,17 +8,13 @@ import ch.bbzbl.mynotes.data.service.NoteService;
 import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
 import ch.bbzbl.mynotes.views.MainLayout;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -46,6 +42,7 @@ import java.util.Objects;
 @RouteAlias(value = "", layout = MainLayout.class)
 @PermitAll
 public class MyNotesView extends Div {
+	//titel für lists titel wieder h2 und popup zum ändern
 
 	public static final String LEER = "Leer";
 	public static final String MIN_WIDTH = "300px";
@@ -76,9 +73,9 @@ public class MyNotesView extends Div {
 				HorizontalLayout cardLayout = new HorizontalLayout();
 				cardLayout.setMargin(true);
 
-				TextField titel = new TextField();
-				titel.setValue(folder.getTitel());
-				titel.getElement().addEventListener("click", e -> {
+				H2 titel = new H2(folder.getTitel());
+
+				titel.addClickListener(e -> {
 					openFolderID = folder.getId();
 					notes = folder.getNotes();
 					if (notes.isEmpty()) {
@@ -95,64 +92,22 @@ public class MyNotesView extends Div {
 					folderList.setItems(folders);
 				});
 
-				Icon finish = createIcon(VaadinIcon.CHECK);
-				finish.getElement().getThemeList().add("badge success");
-
-				Icon close = createIcon(VaadinIcon.CLOSE_SMALL);
-				close.getElement().getThemeList().add("badge error");
-
 				Icon edit = createIcon(VaadinIcon.PENCIL);
 
-				finish.addClickListener(iconClickEvent -> {
-					cardLayout.remove(edit);
-					cardLayout.remove(finish);
-					cardLayout.remove(close);
-					titel.setReadOnly(true);
-					cardLayout.add(edit);
-
-
-					folder.setTitel(titel.getValue());
-					updateFolder();
-
-					folderList.setItems(folders);
-				});
-
-
-				close.addClickListener(iconClickEvent -> {
-					titel.setReadOnly(true);
-					cardLayout.remove(edit);
-					cardLayout.remove(finish);
-					cardLayout.remove(close);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
-
-					folderList.setItems(folders);
-				});
-
 				edit.addClickListener(iconClickEvent -> {
-					titel.setReadOnly(false);
-					cardLayout.remove(edit);
-					cardLayout.add(finish);
-					cardLayout.add(close);
+				newDialogFolderOrNote(true,false,folder,null);
+
 				});
 
-				if (!Objects.equals(folder.getId(), openFolderID) && cardLayout.getChildren().count() >= 3) {
-					cardLayout.removeAll();
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
-				} else if (Objects.equals(folder.getId(), openFolderID)) {
+				if (Objects.equals(folder.getId(), openFolderID)) {
 					titel.getStyle().set("color", "#c64343");
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
-				} else {
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
+
 				}
+				cardLayout.add(titel);
+				cardLayout.add(edit);
 				return cardLayout;
 			});
+
 	private final ComponentRenderer<Component, Note> noteCardRenderer = new ComponentRenderer<>(
 			note -> {
 
@@ -160,9 +115,9 @@ public class MyNotesView extends Div {
 
 				cardLayout.setMargin(true);
 
-				TextField titel = new TextField();
-				titel.setValue(note.getTitel());
-				titel.getElement().addEventListener("click", e -> {
+				H3 titel = new H3(note.getTitel());
+
+				titel.addClickListener( e -> {
 					openNoteID = note.getId();
 					currentNote = note;
 					notesSplit.remove(noteLayout);
@@ -172,61 +127,19 @@ public class MyNotesView extends Div {
 					noteList.setItems(note.getFolder().getNotes());
 				});
 
-				Icon finish = createIcon(VaadinIcon.CHECK);
-				finish.getElement().getThemeList().add("badge success");
-
-				Icon close = createIcon(VaadinIcon.CLOSE_SMALL);
-				close.getElement().getThemeList().add("badge error");
-
 				Icon edit = createIcon(VaadinIcon.PENCIL);
 
-				finish.addClickListener(iconClickEvent -> {
-					titel.setReadOnly(true);
-					cardLayout.remove(edit);
-					cardLayout.remove(finish);
-					cardLayout.remove(close);
-					cardLayout.add(edit);
-
-					note.setTitel(titel.getValue());
-					updateNote();
-
-					noteList.setItems(note.getFolder().getNotes());
-				});
-
-				close.addClickListener(iconClickEvent -> {
-					titel.setReadOnly(true);
-					cardLayout.remove(edit);
-					cardLayout.remove(finish);
-					cardLayout.remove(close);
-					cardLayout.add(edit);
-
-					noteList.setItems(note.getFolder().getNotes());
-				});
-
 				edit.addClickListener(iconClickEvent -> {
-					cardLayout.remove(titel);
-					cardLayout.remove(edit);
-					titel.setReadOnly(false);
-					cardLayout.add(finish);
-					cardLayout.add(close);
+					newDialogFolderOrNote(false,false,null,note);
+
 				});
 
-				if (!Objects.equals(note.getId(), openNoteID) && cardLayout.getChildren().count() >= 3) {
-
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
-
-				} else if (Objects.equals(note.getId(), openNoteID)) {
+				if (Objects.equals(note.getId(), openNoteID)) {
 					titel.getStyle().set("color", "#c64343");
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
-				} else {
-					titel.setReadOnly(true);
-					cardLayout.add(titel);
-					cardLayout.add(edit);
+
 				}
+				cardLayout.add(titel);
+				cardLayout.add(edit);
 				return cardLayout;
 			});
 
@@ -259,7 +172,10 @@ public class MyNotesView extends Div {
 			notes = folders.stream().findFirst().get().getNotes();
 			currentFolder = folders.stream().findFirst().orElse(null);
 			currentNote = notes.stream().findFirst().orElse(null);
+
 		}
+		openFolderID = currentFolder.getId();
+		openNoteID = currentNote.getId();
 
 		folderList.setItems(folders);
 		folderList.setRenderer(folderCardRenderer);
@@ -270,16 +186,16 @@ public class MyNotesView extends Div {
 		noteList.setMinWidth(MIN_WIDTH);
 
 		Button addFolder = new Button("Neuer Ordner", e -> {
-			newFolderOrNote(true);
+			newDialogFolderOrNote(true, true, null, null);
 		});
 
-		VerticalLayout listLayout = new VerticalLayout(addFolder, folderList);
+		VerticalLayout listLayout = new VerticalLayout(new H2("Notizbücher"), folderList, addFolder);
 
 		Button addNote = new Button("Neue Notiz", e -> {
 
-			newFolderOrNote(false);
+			newDialogFolderOrNote(false, true,null,null);
 		});
-		VerticalLayout listLayoutN = new VerticalLayout(addNote, noteList);
+		VerticalLayout listLayoutN = new VerticalLayout(new H3("Notizen"), noteList, addNote);
 		listLayoutN.setMaxWidth("450px");
 		notesSplit.setPadding(true);
 		notesSplit.add(listLayoutN);
@@ -306,25 +222,56 @@ public class MyNotesView extends Div {
 		}
 	}
 
-	private void newFolderOrNote(boolean sourceFromFolderButton) {
+	private void newDialogFolderOrNote(boolean sourceFromFolderButton, boolean isNewObject, Folder newFolder, Note newNote) {
 		Dialog dialog;
 		dialog = new Dialog();
-		dialog.setHeaderTitle("Neu");
+		if (isNewObject){
+			dialog.setHeaderTitle("Neu");
+		} else {
+			dialog.setHeaderTitle("Bearbeiten");
+		}
+		VerticalLayout dialogLayout;
 
-		VerticalLayout dialogLayout = createDialogLayout(sourceFromFolderButton);
+		if (newNote != null){
+		    dialogLayout = createDialogLayout(sourceFromFolderButton, newNote.getTitel(), false);
+		} else if (newFolder != null){
+			dialogLayout = createDialogLayout(sourceFromFolderButton,newFolder.getTitel(),newFolder.isPublic());
+		} else {
+			dialogLayout = createDialogLayout(sourceFromFolderButton,"", false);
+		}
+
 
 		dialog.add(dialogLayout);
 
 		Button saveButton = new Button("speichern", b -> {
-			if (sourceFromFolderButton) {
-				emptyFolder(popupField.getValue(), Objects.equals(radioGroup.getValue(), "public"));
+			if (isNewObject) {
+				if (sourceFromFolderButton) {
+					emptyFolder(popupField.getValue(), Objects.equals(radioGroup.getValue(), "public"));
 
+				} else {
+					newNote(popupField.getValue());
+				}
 			} else {
-				newNote(popupField.getValue());
+				if (sourceFromFolderButton) {
+					currentFolder.setTitel(popupField.getValue());
+					if ("private".equals(radioGroup.getValue())){
+						currentFolder.setPublic(false);
+					} else {
+						currentFolder.setPublic(true);
+					}
+					updateFolder();
+					folders = userService.getFoldersByUserId(user.getId());
+					notes = folders.stream().findFirst().get().getNotes();
+				} else {
+					currentNote.setTitel(popupField.getValue());
+					updateNote();
+					folders = userService.getFoldersByUserId(user.getId());
+					notes = userService.getFoldersByUserId(user.getId()).stream().filter(folder -> folder.getId() == openFolderID).findFirst().get().getNotes();
+				}
 			}
 
 			folderList.setItems(folders);
-
+			noteList.setItems(notes);
 			dialog.close();
 		});
 		saveButton.addClickShortcut(Key.ENTER);
@@ -344,20 +291,25 @@ public class MyNotesView extends Div {
 		updateNote();
 		folders = userService.getFoldersByUserId(user.getId());
 		notes = userService.getFoldersByUserId(user.getId()).stream().filter(folder -> folder.getId() == openFolderID).findFirst().get().getNotes();
-
-		folderList.setItems(folders);
-		noteList.setItems(notes);
 	}
 
-	private VerticalLayout createDialogLayout(boolean sourceFromFolderButton) {
+	private VerticalLayout createDialogLayout(boolean sourceFromFolderButton, String text, boolean folderVisibility) {
 
 		VerticalLayout verticalLayout = new VerticalLayout();
 		popupField.setLabel("Name");
+		popupField.isRequired();
+		popupField.setValue(text);
 		verticalLayout.add(popupField);
 		if (sourceFromFolderButton) {
 			radioGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
 			radioGroup.setLabel("Sichtbarkeit");
 			radioGroup.setItems("public", "private");
+			if (!folderVisibility){
+				radioGroup.setValue("private");
+			} else {
+				radioGroup.setValue("public");
+			}
+			radioGroup.isRequired();
 			verticalLayout.add(radioGroup);
 		}
 		verticalLayout.setPadding(false);
@@ -451,6 +403,10 @@ public class MyNotesView extends Div {
 			currentNote.setContent(textEditor.getValue());
 			currentNote.setTitel(noteTitle.getValue());
 			updateNote();
+
+			notes = userService.getFoldersByUserId(user.getId()).stream().filter(ffolder -> ffolder.getId() == openFolderID).findFirst().get().getNotes();
+			currentNote = noteService.get(openNoteID).get();
+			noteList.setItems(notes);
 			notesSplit.remove(noteLayout);
 			notesSplit.add(getNormalLayout());
 		});
