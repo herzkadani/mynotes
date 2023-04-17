@@ -7,7 +7,6 @@ import ch.bbzbl.mynotes.data.service.FolderService;
 import ch.bbzbl.mynotes.data.service.NoteService;
 import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
-import ch.qos.logback.core.joran.conditional.IfAction;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
@@ -44,14 +43,15 @@ public class NotesViewLayout extends Div {
 	public static final String BEARBEITEN = "Bearbeiten";
 	public static final String WARNING = "Warning";
 	private final VerticalLayout noteLayout = new VerticalLayout();
+	private final TextField popupField = new TextField();
+	private final RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
+	private final AuthenticatedUser authenticatedUser;
+	private final boolean sharedView;
 	VirtualList<Folder> folderList = new VirtualList<>();
 	VirtualList<Note> noteList = new VirtualList<>();
 	RichTextEditor textEditor = new RichTextEditor();
 	SplitLayout splitLayout;
 	HorizontalLayout notesSplit = new HorizontalLayout();
-	private final TextField popupField = new TextField();
-	private final RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
-	private final AuthenticatedUser authenticatedUser;
 	private User user;
 	private FolderService folderService = null;
 	private NoteService noteService = null;
@@ -61,7 +61,6 @@ public class NotesViewLayout extends Div {
 	private Folder currentFolder;
 	private Note currentNote;
 	private long openFolderID;
-	private final boolean sharedView;
 	private final ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<>(
 			folder -> {
 
@@ -253,11 +252,13 @@ public class NotesViewLayout extends Div {
 		VerticalLayout dialogLayout;
 
 		if (note != null) {
-			dialogLayout = createDialogLayout(sourceFromFolderButton, note.getTitel(), sharedView);
+			dialogLayout = createDialogLayout(sourceFromFolderButton, note.getTitel(), sharedView, note.getFolder().getUser());
+
 		} else if (folder != null) {
-			dialogLayout = createDialogLayout(sourceFromFolderButton, folder.getTitel(), folder.isPublic());
+			dialogLayout = createDialogLayout(sourceFromFolderButton, folder.getTitel(), folder.isPublic(), folder.getUser());
+
 		} else {
-			dialogLayout = createDialogLayout(sourceFromFolderButton, "", sharedView);
+			dialogLayout = createDialogLayout(sourceFromFolderButton, "", sharedView, user);
 		}
 
 		dialog.add(dialogLayout);
@@ -315,7 +316,7 @@ public class NotesViewLayout extends Div {
 		getNotes();
 	}
 
-	private VerticalLayout createDialogLayout(boolean sourceFromFolderButton, String text, boolean folderVisibility) {
+	private VerticalLayout createDialogLayout(boolean sourceFromFolderButton, String text, boolean folderVisibility, User owner) {
 
 		VerticalLayout verticalLayout = new VerticalLayout();
 		popupField.setLabel("Name");
@@ -323,16 +324,18 @@ public class NotesViewLayout extends Div {
 		popupField.setValue(text);
 		verticalLayout.add(popupField);
 		if (sourceFromFolderButton) {
-			radioGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
-			radioGroup.setLabel("Sichtbarkeit");
-			radioGroup.setItems("public", "private");
-			if (!folderVisibility) {
-				radioGroup.setValue("private");
-			} else {
-				radioGroup.setValue("public");
+			if (owner.getUsername().equals(user.getUsername())) {
+				radioGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+				radioGroup.setLabel("Sichtbarkeit");
+				radioGroup.setItems("public", "private");
+				if (!folderVisibility) {
+					radioGroup.setValue("private");
+				} else {
+					radioGroup.setValue("public");
+				}
+				radioGroup.isRequired();
+				verticalLayout.add(radioGroup);
 			}
-			radioGroup.isRequired();
-			verticalLayout.add(radioGroup);
 		}
 		verticalLayout.setPadding(false);
 		verticalLayout.setSpacing(false);
