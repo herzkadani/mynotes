@@ -7,6 +7,7 @@ import ch.bbzbl.mynotes.data.service.FolderService;
 import ch.bbzbl.mynotes.data.service.NoteService;
 import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
+import ch.qos.logback.core.joran.conditional.IfAction;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
@@ -48,9 +49,9 @@ public class NotesViewLayout extends Div {
 	RichTextEditor textEditor = new RichTextEditor();
 	SplitLayout splitLayout;
 	HorizontalLayout notesSplit = new HorizontalLayout();
-	private TextField popupField = new TextField();
-	private RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
-	private AuthenticatedUser authenticatedUser;
+	private final TextField popupField = new TextField();
+	private final RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
+	private final AuthenticatedUser authenticatedUser;
 	private User user;
 	private FolderService folderService = null;
 	private NoteService noteService = null;
@@ -60,7 +61,7 @@ public class NotesViewLayout extends Div {
 	private Folder currentFolder;
 	private Note currentNote;
 	private long openFolderID;
-	private boolean sharedView;
+	private final boolean sharedView;
 	private final ComponentRenderer<Component, Folder> folderCardRenderer = new ComponentRenderer<>(
 			folder -> {
 
@@ -241,7 +242,7 @@ public class NotesViewLayout extends Div {
 		}
 	}
 
-	private void newDialogFolderOrNote(boolean sourceFromFolderButton, boolean isNewObject, Folder newFolder, Note newNote) {
+	private void newDialogFolderOrNote(boolean sourceFromFolderButton, boolean isNewObject, Folder folder, Note note) {
 		Dialog dialog;
 		dialog = new Dialog();
 		if (isNewObject) {
@@ -251,10 +252,10 @@ public class NotesViewLayout extends Div {
 		}
 		VerticalLayout dialogLayout;
 
-		if (newNote != null) {
-			dialogLayout = createDialogLayout(sourceFromFolderButton, newNote.getTitel(), sharedView);
-		} else if (newFolder != null) {
-			dialogLayout = createDialogLayout(sourceFromFolderButton, newFolder.getTitel(), newFolder.isPublic());
+		if (note != null) {
+			dialogLayout = createDialogLayout(sourceFromFolderButton, note.getTitel(), sharedView);
+		} else if (folder != null) {
+			dialogLayout = createDialogLayout(sourceFromFolderButton, folder.getTitel(), folder.isPublic());
 		} else {
 			dialogLayout = createDialogLayout(sourceFromFolderButton, "", sharedView);
 		}
@@ -271,17 +272,20 @@ public class NotesViewLayout extends Div {
 				}
 			} else {
 				if (sourceFromFolderButton) {
-					currentFolder.setTitel(popupField.getValue());
+
+					folder.setTitel(popupField.getValue());
 					if ("private".equals(radioGroup.getValue())) {
-						currentFolder.setPublic(false);
+						folder.setPublic(false);
 					} else {
-						currentFolder.setPublic(true);
+						folder.setPublic(true);
 					}
+					currentFolder = folder;
 					updateFolder();
 					folders = getFolders();
 					notes = folders.stream().findFirst().get().getNotes();
 				} else {
-					currentNote.setTitel(popupField.getValue());
+					note.setTitel(popupField.getValue());
+					currentNote = note;
 					updateNote();
 					folders = getFolders();
 					getNotes();
