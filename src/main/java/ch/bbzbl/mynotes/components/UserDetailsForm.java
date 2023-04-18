@@ -36,6 +36,12 @@ public class UserDetailsForm extends FormLayout {
 	
 	
 
+	/**
+	 * Constructor
+	 * @param user User to be loaded in the binder
+	 * @param isAdminView true if role select should be visible
+	 * @param accountController the account controller to execute operations
+	 */
 	public UserDetailsForm(User user, boolean isAdminView, AccountController accountController) {
 		this.accountController = accountController;
 		

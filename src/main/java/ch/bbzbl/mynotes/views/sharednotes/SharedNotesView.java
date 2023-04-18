@@ -15,10 +15,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("Shared Notes")
 @Route(value = "shared-notes", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed("USER")
 public class SharedNotesView extends VerticalLayout {
 
 	public SharedNotesView(FolderService folderService, NoteService noteService, UserService userService, AuthenticatedUser authenticatedUser) {

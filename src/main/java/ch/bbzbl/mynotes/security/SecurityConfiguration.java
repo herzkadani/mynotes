@@ -95,5 +95,5 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         super.configure(http);
         setLoginView(http, LoginView.class);
     }
-
+    
 }

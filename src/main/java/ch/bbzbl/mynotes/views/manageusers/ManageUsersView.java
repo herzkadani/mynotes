@@ -30,6 +30,11 @@ import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.views.MainLayout;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * view to manage user accounts
+ * @author Dani Herzka
+ *
+ */
 @PageTitle("Manage Users")
 @Route(value = "users", layout = MainLayout.class)
 @RolesAllowed("ADMIN")
