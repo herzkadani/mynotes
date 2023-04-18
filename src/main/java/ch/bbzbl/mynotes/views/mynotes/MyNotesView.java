@@ -15,7 +15,6 @@ import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("MyNotes")
 @Route(value = "MyNotes", layout = MainLayout.class)
-@RouteAlias(value = "", layout = MainLayout.class)
 @RolesAllowed("USER")
 public class MyNotesView extends Div {
 
