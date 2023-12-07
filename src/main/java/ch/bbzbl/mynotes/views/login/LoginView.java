@@ -1,5 +1,7 @@
 package ch.bbzbl.mynotes.views.login;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -39,7 +41,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver, HasU
         i18n.getHeader().setDescription("Login using user/user or admin/admin"); //TODO remove before deployment
         setI18n(i18n);
         setForgotPasswordButtonVisible(false);
-        setOpened(true);
+
         
         //Sign in with Google
         HorizontalLayout laySignInWithGoogle = new HorizontalLayout();
@@ -50,13 +52,22 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver, HasU
         laySignInWithGoogle.add(googleIcon, p);
         Anchor loginLink = new Anchor("/oauth2/authorization/google");
         loginLink.add(laySignInWithGoogle);
-        
         // Set router-ignore attribute so that Vaadin router doesn't handle the login request
         loginLink.getElement().setAttribute("router-ignore", true);
-        Notification loginWithGoogleNotification = new Notification();
-        loginWithGoogleNotification.setPosition(Position.BOTTOM_CENTER);
-        loginWithGoogleNotification.add(loginLink);
-        loginWithGoogleNotification.open();
+
+        Button registerButton = new Button("Register");
+        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        registerButton.addClickListener(e -> {
+            registerButton.getUI().ifPresent(ui -> ui.navigate("register"));
+            setOpened(false);
+        });
+        registerButton.setWidthFull();
+        registerButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+
+        getFooter().add(registerButton, loginLink);
+
+
+        setOpened(true);
     }
 
     @Override
