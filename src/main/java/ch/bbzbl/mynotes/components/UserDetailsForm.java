@@ -42,7 +42,7 @@ public class UserDetailsForm extends FormLayout {
 	 * @param isAdminView true if role select should be visible
 	 * @param accountController the account controller to execute operations
 	 */
-	public UserDetailsForm(User user, boolean isAdminView, AccountController accountController) {
+	public UserDetailsForm(User user, AccountController accountController, boolean isAdminView, boolean isRegisterView) {
 		this.accountController = accountController;
 		
 		userBinder = new Binder<>(User.class);
@@ -60,6 +60,11 @@ public class UserDetailsForm extends FormLayout {
 		txtEmail.setRequired(true);
 		cmbRole.setRequired(true);
 
+		if (isRegisterView) {
+			txtPassword.setRequired(true);
+			txtRepeatPassword.setRequired(true);
+		}
+
 		if (user.isOAuthUser()) {
 			txtUsername.setReadOnly(true);
 			txtEmail.setReadOnly(true);
@@ -74,7 +79,7 @@ public class UserDetailsForm extends FormLayout {
 		// bind fields
 		userBinder.forField(txtUsername).withValidator(v -> {
 			// username hasn't been changed, no validation needed
-			if (user.getUsername().equals(v))
+			if (user.getUsername() != null && user.getUsername().equals(v))
 				return true;
 			// if username already taken, return false
 			return !accountController.usernameAlreadyTaken(v);

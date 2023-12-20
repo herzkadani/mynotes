@@ -108,7 +108,7 @@ public class ManageUsersView extends Div {
 	 */
 	private void editButtonClickEvent(ClickEvent<Button> event, User user) {
 		Dialog editUserDialog = new Dialog();
-		UserDetailsForm userForm = new UserDetailsForm(user, true, accountController);
+		UserDetailsForm userForm = new UserDetailsForm(user, accountController, true, false);
 
 				
 		Button cancel = new Button("Cancel");

@@ -78,7 +78,7 @@ public class AccountView extends HorizontalLayout {
 			UI.getCurrent().navigate("login");
 		}
 
-		layForm = new UserDetailsForm(user, false, accountController);
+		layForm = new UserDetailsForm(user, accountController, false, false);
 		
 		// load existing data from user object
 		layForm.getUserBinder().readBean(user);
