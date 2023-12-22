@@ -46,7 +46,7 @@ public class UserDetailsForm extends FormLayout {
 		this.accountController = accountController;
 		
 		userBinder = new Binder<>(User.class);
-		
+		userBinder.setBean(user);
 		txtUsername = new TextField("Username");
 		txtName = new TextField("Full Name");
 		txtEmail = new EmailField("E-Mail");

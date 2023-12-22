@@ -31,6 +31,7 @@ public class User extends AbstractEntity {
 	private String email;
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Folder> folders = null;
+	private String secret;
 	private boolean isOAuthUser = false;
 
 	public String getUsername() {
@@ -83,7 +84,7 @@ public class User extends AbstractEntity {
 
 	public void addFolder(Folder f) {
 		if (folders == null) {
-			folders = new ArrayList<Folder>();
+			folders = new ArrayList<>();
 		}
 		folders.add(f);
 		f.setUser(this);
@@ -104,5 +105,18 @@ public class User extends AbstractEntity {
 		} else {
 			roles.add(user);
 		}
+	}
+
+	public String getSecret() {
+		return secret;
+	}
+
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
+
+	@Override
+	public String toString() {
+		return username;
 	}
 }

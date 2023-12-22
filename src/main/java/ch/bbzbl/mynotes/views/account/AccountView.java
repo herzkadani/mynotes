@@ -28,6 +28,8 @@ import ch.bbzbl.mynotes.views.MainLayout;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
 
+import java.util.Optional;
+
 /**
  * Account View
  * 
@@ -44,7 +46,7 @@ public class AccountView extends HorizontalLayout {
 	// Components
 	UserDetailsForm layForm;
 	
-	private Button btnSave;
+	private final Button btnSave;
 
 	// Members
 	@Autowired
@@ -71,21 +73,22 @@ public class AccountView extends HorizontalLayout {
 		setSizeFull();
 
 		// get authenticated user
-		if (authenticatedUser.get().isPresent()) {
-			user = authenticatedUser.get().get();
+		Optional<User> user = authenticatedUser.get();
+		if (user.isPresent()) {
+			this.user = user.get();
 		} else {
 			authenticatedUser.logout();
-			UI.getCurrent().navigate("login");
+			getUI().ifPresent(ui -> ui.navigate("login"));
 		}
 
-		layForm = new UserDetailsForm(user, accountController, false, false);
+		layForm = new UserDetailsForm(this.user, accountController, false, false);
 		
 		// load existing data from user object
-		layForm.getUserBinder().readBean(user);
+		layForm.getUserBinder().readBean(this.user);
 
 		// save button
 		btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		btnSave.addClickListener(event -> saveButtonClickEvent(event));
+		btnSave.addClickListener(this::saveButtonClickEvent);
 
 		// form layout
 		layForm.setWidth("600px");
