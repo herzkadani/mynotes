@@ -2,6 +2,7 @@ package ch.bbzbl.mynotes.components;
 
 import java.util.Set;
 
+import com.vaadin.flow.data.validator.StringLengthValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -97,6 +98,15 @@ public class UserDetailsForm extends FormLayout {
 					if (!bindUser.isOAuthUser())
 						bindUser.setEmail(string);
 				});
+		userBinder.forField(txtPassword)
+				.withValidator(
+						new StringLengthValidator("Password must be at least 8 characters long", 8, null))
+				.withValidator(value -> value.matches(".*\\d.*"), "Password must contain at least one digit")
+				.withValidator(value -> value.matches(".*[a-z].*"), "Password must contain at least one lowercase letter")
+				.withValidator(value -> value.matches(".*[A-Z].*"), "Password must contain at least one uppercase letter")
+				.withValidator(value -> value.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>/?].*"),
+						"Password must contain at least one special character");
+
 
 		userBinder.bind(txtPassword, bindUser -> null, (bindUser, value) -> {
 			// OAuth Users can't set a password

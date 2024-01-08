@@ -15,7 +15,7 @@ public class Note extends AbstractEntity {
 	private String content;
 
 	@ManyToOne
-	@JoinColumn(name = "folder", foreignKey = @jakarta.persistence.ForeignKey(name = "folder_fk"))
+	@JoinColumn(name = "folder",  foreignKey = @jakarta.persistence.ForeignKey(name = "folder_fk"))
 	private Folder folder;
 
 	public Note(String titel, String content, Folder folder) {

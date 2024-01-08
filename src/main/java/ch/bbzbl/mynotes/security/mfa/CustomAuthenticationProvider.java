@@ -2,6 +2,8 @@ package ch.bbzbl.mynotes.security.mfa;
 
 import ch.bbzbl.mynotes.data.entity.User;
 import ch.bbzbl.mynotes.data.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +20,8 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
     @Autowired
     private final MFATokenService mfaTokenService;
 
+    private Logger LOGGER = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
+
     public CustomAuthenticationProvider(MFATokenService mfaTokenService) {
         this.mfaTokenService = mfaTokenService;
     }
@@ -30,10 +34,12 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
                 .getVerificationCode();
         Optional<User> user = userService.findByUsername(auth.getName()).stream().findFirst();
         if (user.isEmpty()) {
+            LOGGER.error("Bad Credentials Username or Password");
             throw new BadCredentialsException("Invalid username or password");
         }
 
         if (!isValidLong(verificationCode) || !mfaTokenService.verifyTotp(verificationCode, user.get().getSecret())) {
+           LOGGER.error("Bad Credentials Verification Code");
             throw new BadCredentialsException("Invalid verfication code");
         }
 
@@ -46,6 +52,7 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
         try {
             Long.parseLong(code);
         } catch (NumberFormatException e) {
+            LOGGER.error("Invalid Long", e);
             return false;
         }
         return true;

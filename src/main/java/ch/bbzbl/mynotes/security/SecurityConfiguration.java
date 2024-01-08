@@ -1,34 +1,26 @@
 package ch.bbzbl.mynotes.security;
 
-import java.io.IOException;
-import java.security.SecureRandom;
-
+import ch.bbzbl.mynotes.data.Role;
+import ch.bbzbl.mynotes.data.entity.User;
+import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.security.mfa.CustomAuthenticationProvider;
 import ch.bbzbl.mynotes.security.mfa.CustomWebAuthenticationDetailsSource;
 import ch.bbzbl.mynotes.security.mfa.MFATokenService;
+import ch.bbzbl.mynotes.views.login.LoginView;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
-
-import ch.bbzbl.mynotes.data.Role;
-import ch.bbzbl.mynotes.data.entity.User;
-import ch.bbzbl.mynotes.data.service.UserService;
-import ch.bbzbl.mynotes.views.login.LoginView;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
 @Configuration
@@ -94,7 +86,11 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 
 		});
 		http.formLogin().authenticationDetailsSource(authenticationDetailsSource);
-
+		http.sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+				.sessionFixation().migrateSession()
+				.invalidSessionUrl("/login");
+		http.sessionManagement().maximumSessions(1);
         http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/images/*")).permitAll();
 
         // Icons from the line-awesome addon
@@ -108,6 +104,11 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 		authProvider.setUserDetailsService(userDetailsService);
 		authProvider.setPasswordEncoder(passwordEncoder());
 		return authProvider;
+	}
+
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
 	}
     
 }

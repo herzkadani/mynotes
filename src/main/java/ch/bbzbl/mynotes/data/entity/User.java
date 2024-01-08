@@ -11,6 +11,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Set;
 @Table(name = "application_user")
 public class User extends AbstractEntity {
 
+	@NotNull
 	private String username;
 	private String name;
 	@JsonIgnore

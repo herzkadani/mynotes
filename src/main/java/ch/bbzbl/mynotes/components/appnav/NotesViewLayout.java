@@ -1,5 +1,6 @@
 package ch.bbzbl.mynotes.components.appnav;
 
+import ch.bbzbl.mynotes.components.NotificationFactory;
 import ch.bbzbl.mynotes.data.entity.Folder;
 import ch.bbzbl.mynotes.data.entity.Note;
 import ch.bbzbl.mynotes.data.entity.User;
@@ -7,11 +8,7 @@ import ch.bbzbl.mynotes.data.service.FolderService;
 import ch.bbzbl.mynotes.data.service.NoteService;
 import ch.bbzbl.mynotes.data.service.UserService;
 import ch.bbzbl.mynotes.security.AuthenticatedUser;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -31,13 +28,18 @@ import com.vaadin.flow.component.splitlayout.SplitLayoutVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.internal.HtmlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class NotesViewLayout extends Div {
 
+	private Logger LOGGER = LoggerFactory.getLogger(NotesViewLayout.class);
 	public static final String LEER = "Leer";
 	public static final String MIN_WIDTH = "300px";
 	public static final String BEARBEITEN = "Bearbeiten";
@@ -297,12 +299,44 @@ public class NotesViewLayout extends Div {
 			noteList.setItems(notes);
 			dialog.close();
 		});
+
+		Button deleteButton = new Button("löschen", b -> {
+			if (isNewObject) {
+				dialog.close();
+			} else {
+				if (sourceFromFolderButton) {
+					currentFolder = folder;
+					if (currentFolder != null) {
+						folderService.delete(currentFolder);
+						folders = getFolders();
+						if (!folders.isEmpty()) {
+							notes = folders.stream().findFirst().get().getNotes();
+						} else {
+							NotificationFactory.errorNotification("You cannot delete the last Folder");
+						}
+					}
+				} else {
+					currentNote = note;
+					if (currentNote != null) {
+						noteService.delete(currentNote);
+						folders = getFolders();
+						getNotes();
+					}
+				}
+			}
+
+			folderList.setItems(folders);
+			noteList.setItems(notes);
+			dialog.close();
+		});
+		deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 		saveButton.addClickShortcut(Key.ENTER);
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		Button cancelButton = new Button("abbrechen", be -> dialog.close());
 		cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		dialog.getFooter().add(saveButton);
 		dialog.getFooter().add(cancelButton);
+		dialog.getFooter().add(deleteButton);
 
 		add(dialog);
 
@@ -359,6 +393,7 @@ public class NotesViewLayout extends Div {
 		try {
 			folderService.update(currentFolder);
 		} catch (ObjectOptimisticLockingFailureException oolfe) {
+			LOGGER.error("Concurrency error", oolfe);
 			openWarningDialog();
 
 		}
@@ -368,6 +403,7 @@ public class NotesViewLayout extends Div {
 		try {
 			noteService.update(currentNote);
 		} catch (ObjectOptimisticLockingFailureException oolfe) {
+			LOGGER.error("Concurrency error", oolfe);
 			openWarningDialog();
 
 		}
@@ -400,7 +436,7 @@ public class NotesViewLayout extends Div {
 		H2 noteTitle = new H2(currentNote.getTitel());
 
 		String valueAsHtml = currentNote.getContent();
-
+		HtmlUtils.escape(valueAsHtml);
 		Html label = new Html("<div>" + valueAsHtml + "</div>");
 
 		Button noteButton = new Button(BEARBEITEN, this::editMode);

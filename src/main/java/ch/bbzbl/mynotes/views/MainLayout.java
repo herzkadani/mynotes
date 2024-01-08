@@ -22,12 +22,17 @@ import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
@@ -39,6 +44,9 @@ public class MainLayout extends AppLayout {
 
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
+    private Logger LOGGER = LoggerFactory.getLogger(MainLayout.class);
+
+
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -70,26 +78,26 @@ public class MainLayout extends AppLayout {
         addToDrawer(header, scroller, createFooter());
     }
 
-    private AppNav createNavigation() {
+    private SideNav createNavigation() {
         // AppNav is not yet an official component.
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
-        AppNav nav = new AppNav();
+        SideNav nav = new SideNav();
         
         if (accessChecker.hasAccess(MyNotesView.class)) {
-            nav.addItem(new AppNavItem("MyNotes", MyNotesView.class, LineAwesomeIcon.BOOK_SOLID.create()));
+            nav.addItem(new SideNavItem("MyNotes", MyNotesView.class, LineAwesomeIcon.BOOK_SOLID.create()));
 
         }
         if (accessChecker.hasAccess(SharedNotesView.class)) {
             nav.addItem(
-                    new AppNavItem("Shared Notes", SharedNotesView.class, LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
+                    new SideNavItem("Shared Notes", SharedNotesView.class, LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
 
         }
         if (accessChecker.hasAccess(AccountView.class)) {
-            nav.addItem(new AppNavItem("Account", AccountView.class, LineAwesomeIcon.USER.create()));
+            nav.addItem(new SideNavItem("Account", AccountView.class, LineAwesomeIcon.USER.create()));
 
         }
         if (accessChecker.hasAccess(ManageUsersView.class)) {
-            nav.addItem(new AppNavItem("Manage Users", ManageUsersView.class, LineAwesomeIcon.USERS_SOLID.create()));
+            nav.addItem(new SideNavItem("Manage Users", ManageUsersView.class, LineAwesomeIcon.USERS_SOLID.create()));
 
         }
 
@@ -121,6 +129,9 @@ public class MainLayout extends AppLayout {
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
             userName.getSubMenu().addItem("Sign out", e -> {
+                if (authenticatedUser.get().isPresent()){
+                    LOGGER.info(authenticatedUser.get().get().getUsername() + "logged out");
+                }
                 authenticatedUser.logout();
             });
 

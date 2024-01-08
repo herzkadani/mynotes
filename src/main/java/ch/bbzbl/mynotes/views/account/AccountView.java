@@ -1,5 +1,7 @@
 package ch.bbzbl.mynotes.views.account;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,6 +56,7 @@ public class AccountView extends HorizontalLayout {
 	@Autowired
 	private AccountController accountController;
 	private User user;
+	private Logger LOGGER = LoggerFactory.getLogger(AccountView.class);
 
 	public AccountView() {
 		
@@ -76,6 +79,7 @@ public class AccountView extends HorizontalLayout {
 		Optional<User> user = authenticatedUser.get();
 		if (user.isPresent()) {
 			this.user = user.get();
+			LOGGER.info(user.get().getUsername() + " opend Account View");
 		} else {
 			authenticatedUser.logout();
 			getUI().ifPresent(ui -> ui.navigate("login"));
@@ -119,8 +123,10 @@ public class AccountView extends HorizontalLayout {
 				authenticatedUser.logout();
 
 		} catch (ValidationException e) {
+			LOGGER.error("Invalid input", e);
 			NotificationFactory.errorNotification("Some fields are incorrect").open();
 		} catch (ObjectOptimisticLockingFailureException e) {
+			LOGGER.error("Concurrency error", e);
 			Dialog versionConflictDialog = new Dialog();
 			versionConflictDialog.add(new Html(
 					"<p>There has been a version conflict. Someone has just edited the same data and saved it before you. Click <a onClick=\"window.location.reload()\" style=\"color:#0044CC;\">here</a> to reload the page.</p>"));

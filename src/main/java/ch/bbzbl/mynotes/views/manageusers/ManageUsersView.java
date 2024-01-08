@@ -1,7 +1,12 @@
 package ch.bbzbl.mynotes.views.manageusers;
 
+import java.util.Optional;
 import java.util.Set;
 
+import ch.bbzbl.mynotes.security.AuthenticatedUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import com.vaadin.flow.component.ClickEvent;
@@ -44,8 +49,23 @@ public class ManageUsersView extends Div {
 
 	private final AccountController accountController;
 
+	private Logger LOGGER = LoggerFactory.getLogger(ManageUsersView.class);
+	@Autowired
+	private AuthenticatedUser authenticatedUser;
+	private User user;
+
 	public ManageUsersView(AccountController accountController) {
 		this.accountController = accountController;
+
+		// get authenticated user
+		Optional<User> user = authenticatedUser.get();
+		if (user.isPresent()) {
+			this.user = user.get();
+			LOGGER.info(user.get().getUsername() + " opend Manage Users View");
+		} else {
+			authenticatedUser.logout();
+			getUI().ifPresent(ui -> ui.navigate("login"));
+		}
 
 		addClassNames("account-view");
 
@@ -54,21 +74,21 @@ public class ManageUsersView extends Div {
 		grid.addColumn(User::getUsername).setAutoWidth(true).setHeader("Username");
 		grid.addColumn(User::getName).setAutoWidth(true).setHeader("Name");
 		grid.addColumn(User::getEmail).setAutoWidth(true).setHeader("E-Mail");
-		grid.addComponentColumn(user -> createRoleBadges(user.getRoles())).setAutoWidth(true).setHeader("Roles");
-		grid.addComponentColumn(user -> {
-			Checkbox chkIsOauth = new Checkbox(user.isOAuthUser());
+		grid.addComponentColumn(currentuser -> createRoleBadges(currentuser.getRoles())).setAutoWidth(true).setHeader("Roles");
+		grid.addComponentColumn(currentuser -> {
+			Checkbox chkIsOauth = new Checkbox(currentuser.isOAuthUser());
 			chkIsOauth.setReadOnly(true);
 			return chkIsOauth;
 		}).setAutoWidth(true).setHeader("OAuth User");
-		grid.addComponentColumn(user -> {
+		grid.addComponentColumn(currentuser -> {
 			Button editButton = new Button(new Icon(VaadinIcon.EDIT));
-			editButton.addClickListener(event -> editButtonClickEvent(event, user));
+			editButton.addClickListener(event -> editButtonClickEvent(event, currentuser));
 			return editButton;
 		}).setFrozenToEnd(true).setHeader("Edit");
-		grid.addComponentColumn(user -> {
+		grid.addComponentColumn(currentuser -> {
 			Button deleteButton = new Button(new Icon(VaadinIcon.TRASH));
 			deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-			deleteButton.addClickListener(event -> deleteButtonClickEvent(event, user));
+			deleteButton.addClickListener(event -> deleteButtonClickEvent(event, currentuser));
 			return deleteButton;
 		}).setHeader("Delete");
 		grid.setItems(accountController.getAllUsers());
@@ -124,16 +144,17 @@ public class ManageUsersView extends Div {
 
 		save.addClickListener(e -> {
 			try {
-				
 				userForm.getUserBinder().writeBean(user);
 				accountController.updateUser(user);
 				editUserDialog.close();
 				refreshGrid();
 				NotificationFactory.successNotification("Data updated").open();
 			} catch (ObjectOptimisticLockingFailureException exception) {
+				LOGGER.error("Concurrency error", exception);
 				NotificationFactory.errorNotification(
 						"Error updating the data. Somebody else has updated the record while you were making changes.").open();
 			} catch (ValidationException validationException) {
+				LOGGER.error("Invalid Input", validationException);
 				NotificationFactory.errorNotification("Failed to update the data. Check again that all values are valid").open();
 			}
 		});

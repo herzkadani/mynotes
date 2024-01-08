@@ -1,20 +1,13 @@
 package ch.bbzbl.mynotes.security;
 
 
-import ch.bbzbl.mynotes.data.service.UserRepository;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.List;
-
-import java.util.Optional;
-
+import ch.bbzbl.mynotes.data.entity.User;
+import ch.bbzbl.mynotes.data.service.UserService;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.spring.security.AuthenticationContext;
-
-import ch.bbzbl.mynotes.data.entity.User;
-import ch.bbzbl.mynotes.data.service.UserService;
+import java.util.Optional;
 
 
 @Component
@@ -38,6 +31,7 @@ public class AuthenticatedUser {
     }
 
     public void logout() {
+        //TODO LOGGING VIEW visit and logout and login, db changes etc and validation register and notes
         authenticationContext.logout();
     }
 
